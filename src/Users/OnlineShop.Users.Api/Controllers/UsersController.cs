@@ -40,13 +40,13 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    public Task<IActionResult> Get()
+    public Task<IActionResult> GetUsers()
     {
        return Task.FromResult<IActionResult>(Ok(_users));
     }
     
     [HttpGet("{id}")]
-    public Task<IActionResult> GetById(int? id)
+    public Task<IActionResult> GetUserById(int? id)
     {
         var user = _users.FirstOrDefault(u => u.Id == id);
 
@@ -59,14 +59,14 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    public Task<IActionResult> Add([FromBody] User user)
+    public Task<IActionResult> AddUser([FromBody] User user)
     {
         _users.Add(user);
         return Task.FromResult<IActionResult>(Ok(user));
     }
     
     [HttpPut("{id}")]
-    public Task<IActionResult> Update(int? id, [FromBody] User userToUpdate)
+    public Task<IActionResult> UpdateUser(int? id, [FromBody] User userToUpdate)
     {
         var user = _users.FirstOrDefault(u => u.Id == id);
 
@@ -85,7 +85,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public Task<IActionResult> Delete(int? id)
+    public Task<IActionResult> DeleteUser(int? id)
     {
         var user = _users.FirstOrDefault(u => u.Id == id);
 
