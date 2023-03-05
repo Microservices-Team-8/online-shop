@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basket-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basket-service
+  template:
+    metadata:
+      labels:
+        app: basket-service
+    spec:
+      containers:
+        - name: basket-service
+          image: basket-service
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
