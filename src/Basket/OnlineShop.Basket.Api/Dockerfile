@@ -8,7 +8,7 @@ WORKDIR /src
 COPY ["src/Basket/OnlineShop.Basket.Api/OnlineShop.Basket.Api.csproj", "src/Basket/OnlineShop.Basket.Api/"]
 RUN dotnet restore "src/Basket/OnlineShop.Basket.Api/OnlineShop.Basket.Api.csproj"
 COPY . .
-WORKDIR "/src/src/Basket/OnlineShop.Basket.Api"
+WORKDIR "/src/Basket/OnlineShop.Basket.Api"
 RUN dotnet build "OnlineShop.Basket.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish

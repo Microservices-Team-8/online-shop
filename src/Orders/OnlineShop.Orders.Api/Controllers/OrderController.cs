@@ -2,11 +2,11 @@
 
 namespace OnlineShop.Orders.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/order")]
     [ApiController]
     public class OrderController : ControllerBase
     {
-        [HttpGet("/completedorders")]
+        [HttpGet]
         public IEnumerable<Order> GetOrders(int userId)
         {
             var items = new List<Order>

@@ -3,7 +3,7 @@ using OnlineShop.Store.Api.Models;
 
 namespace OnlineShop.Store.Api.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api/store")]
 	[ApiController]
 	public class StoreController : ControllerBase
 	{

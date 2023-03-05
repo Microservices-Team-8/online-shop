@@ -8,7 +8,7 @@ using OnlineShop.Users.Api.Models;
 
 namespace OnlineShop.Users.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/users")]
 [ApiController]
 public class UsersController : ControllerBase
 {

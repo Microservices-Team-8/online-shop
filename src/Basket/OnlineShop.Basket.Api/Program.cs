@@ -28,7 +28,7 @@ public class Program
 
         app.UseAuthorization();
 
-        app.MapGet("api/items", (HttpContext httpContext) =>
+        app.MapGet("api/basket", (HttpContext httpContext) =>
         {
             var items = new List<BasketItem>
             {
