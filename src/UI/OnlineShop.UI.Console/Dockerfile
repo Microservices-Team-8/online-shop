@@ -6,7 +6,7 @@ WORKDIR /src
 COPY ["src/UI/OnlineShop.UI.Console/OnlineShop.UI.Console.csproj", "src/UI/OnlineShop.UI.Console/"]
 RUN dotnet restore "src/UI/OnlineShop.UI.Console/OnlineShop.UI.Console.csproj"
 COPY . .
-WORKDIR "/src/src/UI/OnlineShop.UI.Console"
+WORKDIR "/src/UI/OnlineShop.UI.Console"
 RUN dotnet build "OnlineShop.UI.Console.csproj" -c Release -o /app/build
 
 FROM build AS publish
