@@ -4,9 +4,9 @@ namespace OnlineShop.Basket.Api;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static void Main()
     {
-        var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder();
 
         // Add services to the container.
         builder.Services.AddAuthorization();
