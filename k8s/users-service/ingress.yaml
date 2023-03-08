@@ -3,11 +3,10 @@ kind: Ingress
 metadata:
   name: users-service-ingress
   annotations:
-    kubernetes.io/ingress.class: addon-http-application-routing
+    kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
-    - hosts: lab1.<uuid>.<region>.aksapp.io
-      http:
+    - http:
         paths:
           - path: /api/users
             pathType: "Prefix"
