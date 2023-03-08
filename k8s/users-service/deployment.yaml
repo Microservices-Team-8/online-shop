@@ -13,8 +13,8 @@ spec:
         app: users-service
     spec:
       containers:
-        - name: users-service
-          image: users-service
-          imagePullPolicy: Never
+        - image: idiordiev/online-shop-users-service
+          imagePullPolicy: Always
+          name: users-service
           ports:
-            - containerPort: 80
+            - containerPort: 8080

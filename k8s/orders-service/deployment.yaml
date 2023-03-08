@@ -13,8 +13,8 @@ spec:
         app: orders-service
     spec:
       containers:
-        - name: orders-service
-          image: orders-service
-          imagePullPolicy: Never
+        - image: idiordiev/online-shop-orders-service
+          imagePullPolicy: Always
+          name: orders-service
           ports:
-            - containerPort: 80
+            - containerPort: 8080

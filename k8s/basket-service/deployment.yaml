@@ -13,8 +13,8 @@ spec:
         app: basket-service
     spec:
       containers:
-        - name: basket-service
-          image: basket-service
-          imagePullPolicy: Never
+        - image: idiordiev/online-shop-basket-service
+          imagePullPolicy: Always
+          name: basket-service
           ports:
-            - containerPort: 80
+            - containerPort: 8080

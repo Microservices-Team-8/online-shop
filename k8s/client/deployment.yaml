@@ -13,8 +13,8 @@ spec:
         app: client
     spec:
       containers:
-        - name: client
-          image: client
-          imagePullPolicy: Never
+        - image: idiordiev/online-shop-client
+          name: client
+          imagePullPolicy: Always
           ports:
             - containerPort: 80

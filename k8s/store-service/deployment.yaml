@@ -13,8 +13,8 @@ spec:
         app: store-service
     spec:
       containers:
-        - name: store-service
-          image: store-service
-          imagePullPolicy: Never
+        - image: idiordiev/online-shop-store-service
+          imagePullPolicy: Always
+          name: store-service
           ports:
-            - containerPort: 80
+            - containerPort: 8080
