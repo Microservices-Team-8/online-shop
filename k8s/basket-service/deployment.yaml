@@ -17,4 +17,4 @@ spec:
           imagePullPolicy: Always
           name: basket-service
           ports:
-            - containerPort: 8080
+            - containerPort: 80

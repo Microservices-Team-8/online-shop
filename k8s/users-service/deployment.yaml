@@ -17,4 +17,4 @@ spec:
           imagePullPolicy: Always
           name: users-service
           ports:
-            - containerPort: 8080
+            - containerPort: 80
