@@ -22,7 +22,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/order?userId=1')
+    fetch('/api/orders')
         .then((response) => {
             return response.text();
         })

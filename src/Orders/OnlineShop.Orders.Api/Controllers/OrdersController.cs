@@ -2,12 +2,12 @@
 
 namespace OnlineShop.Orders.Api.Controllers
 {
-    [Route("api/order")]
+    [Route("api/orders")]
     [ApiController]
-    public class OrderController : ControllerBase
+    public class OrdersController : ControllerBase
     {
         [HttpGet]
-        public IEnumerable<Order> GetOrders(int userId)
+        public IEnumerable<Order> GetOrders()
         {
             var items = new List<Order>
             {
@@ -16,9 +16,7 @@ namespace OnlineShop.Orders.Api.Controllers
                 new Order { Id = 3, UserId = 2, OrderDate = new DateTime(), BasketItems = new List<int> { 1, 2 }, TotalPrice = 55 }
             };
 
-            var orders = items.Where(o => o.UserId == userId);
-
-            return orders;
+            return items;
         }
 
         [HttpPost]
