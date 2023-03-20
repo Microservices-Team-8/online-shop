@@ -24,9 +24,9 @@ spec:
             - secretRef:
                 name: users-service-postgres-secrets
           volumeMounts:
-            - mountPath: /var/lib/postgresql/data/users-service
+            - mountPath: /var/lib/users-postgresql/data/
               name: users-postgredb
       volumes:
         - name: users-postgredb
           persistentVolumeClaim:
-            claimName: users-postgres-volume-claim
+            claimName: users-service-storage
