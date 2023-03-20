@@ -15,7 +15,7 @@ namespace OnlineShop.Store.Api.Controllers
 			{
 				new Product
 				{
-					ProductId = 1,
+					Id = 1,
 					Code = "j34k9",
 					Name = "Samsung S32A600N",
 					Description = "PC Monitor",
@@ -23,7 +23,7 @@ namespace OnlineShop.Store.Api.Controllers
 				},
 				new Product
 				{
-					ProductId = 2,
+					Id = 2,
 					Code = "83kl1",
 					Name = "Akko 5075b Plus",
 					Description = "Keyboard",
@@ -31,7 +31,7 @@ namespace OnlineShop.Store.Api.Controllers
 				},
 				new Product
 				{
-					ProductId= 3,
+					Id= 3,
 					Code = "pw301",
 					Name = "Apple Watch Ultra GPS",
 					Description = "Hand watch",
@@ -46,10 +46,10 @@ namespace OnlineShop.Store.Api.Controllers
 			return Task.FromResult<IActionResult>(Ok(_products));
 		}
 
-		[HttpGet("{id}")]
+		[HttpGet("{id:int}")]
 		public Task<IActionResult> GetProductById(int id)
 		{
-			var product = _products.FirstOrDefault(x => x.ProductId == id);
+			var product = _products.FirstOrDefault(x => x.Id == id);
 
 			if (product == null)
 			{
@@ -65,10 +65,10 @@ namespace OnlineShop.Store.Api.Controllers
             return Task.FromResult<IActionResult>(Ok(product));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public Task<IActionResult> DeleteProduct(int id)
         {
-            var product = _products.FirstOrDefault(u => u.ProductId == id);
+            var product = _products.FirstOrDefault(u => u.Id == id);
 
             if (product == null)
             {

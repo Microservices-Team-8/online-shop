@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OnlineShop.Users.Api.EF;
 using OnlineShop.Users.Api.Models;
 
 namespace OnlineShop.Users.Api.Controllers;
@@ -12,88 +9,66 @@ namespace OnlineShop.Users.Api.Controllers;
 [ApiController]
 public class UsersController : ControllerBase
 {
-    private readonly ICollection<User> _users;
+    private readonly UsersDbContext _context;
 
-    public UsersController()
+    public UsersController(UsersDbContext context)
     {
-        _users = new List<User>()
-        {
-            new User
-            {
-                Id = 1,
-                FirstName = "John",
-                LastName = "Doe",
-                Email = "johndoe@example.com",
-                PhoneNumber = "555-555-5555",
-                OrderIds = new List<int> { 1, 2 }
-            },
-            new User
-            {
-                Id = 2,
-                FirstName = "Jane",
-                LastName = "Smith",
-                Email = "janesmith@example.com",
-                PhoneNumber = "555-555-5555",
-                OrderIds = new List<int> { 3 }
-            }
-        };
+        _context = context;
     }
 
     [HttpGet]
-    public Task<IActionResult> GetUsers()
+    public async Task<IActionResult> GetUsers()
     {
-       return Task.FromResult<IActionResult>(Ok(_users));
+        var users = await _context.Users.ToListAsync();
+
+        return Ok(users);
     }
-    
-    [HttpGet("{id}")]
-    public Task<IActionResult> GetUserById(int? id)
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetUserById(int id)
     {
-        var user = _users.FirstOrDefault(u => u.Id == id);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
         if (user is null)
-        {
-            return Task.FromResult<IActionResult>(NotFound());
-        }
-        
-        return Task.FromResult<IActionResult>(Ok(user));
+            return NotFound();
+
+        return Ok(user);
     }
 
     [HttpPost]
-    public Task<IActionResult> AddUser([FromBody] User user)
+    public async Task<IActionResult> AddUser([FromBody] User user)
     {
-        _users.Add(user);
-        return Task.FromResult<IActionResult>(Ok(user));
-    }
-    
-    [HttpPut("{id}")]
-    public Task<IActionResult> UpdateUser(int? id, [FromBody] User userToUpdate)
-    {
-        var user = _users.FirstOrDefault(u => u.Id == id);
+        await _context.Users.AddAsync(user);
+        await _context.SaveChangesAsync();
 
-        if (user is null)
-        {
-            return Task.FromResult<IActionResult>(NotFound());
-        }
-
-        user.FirstName = userToUpdate.FirstName;
-        user.LastName = userToUpdate.LastName;
-        user.Email = userToUpdate.Email;
-        user.PhoneNumber = userToUpdate.PhoneNumber;
-        user.OrderIds = userToUpdate.OrderIds;
-
-        return Task.FromResult<IActionResult>(Ok(user));
+        return Ok(user);
     }
 
-    [HttpDelete("{id}")]
-    public Task<IActionResult> DeleteUser(int? id)
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] User userToUpdate)
     {
-        var user = _users.FirstOrDefault(u => u.Id == id);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
         if (user is null)
-        {
-            return Task.FromResult<IActionResult>(NotFound());
-        }
-        
-        return Task.FromResult<IActionResult>(Ok());
+            return NotFound();
+
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+
+        return Ok(user);
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user is null)
+            return NotFound();
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+
+        return Ok();
     }
 }
