@@ -35,26 +35,35 @@ public class BasketsController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task<ActionResult<Basket>> AddBasket([FromBody] Basket Basket)
+	public async Task<ActionResult<Basket>> AddBasket([FromBody] Basket basket)
 	{
-		await _context.Baskets.AddAsync(Basket);
+		await _context.Baskets.AddAsync(basket);
 		await _context.SaveChangesAsync();
 
-		return Ok(Basket);
+		return Ok(basket);
 	}
 
 	[HttpPut("{id:int}")]
-	public async Task<ActionResult<Basket>> UpdateBasket(int id, [FromBody] Basket BasketToUpdate)
+	public async Task<ActionResult<Basket>> UpdateBasket(int id, [FromBody] Basket basket)
 	{
-		var Basket = await _context.Baskets.FirstOrDefaultAsync(u => u.Id == id);
+		if (id != basket.Id)
+			return BadRequest();
 
-		if (Basket is null)
-			return NotFound();
+		_context.Entry(basket).State = EntityState.Modified;
 
-		_context.Baskets.Update(Basket);
-		await _context.SaveChangesAsync();
+		try
+		{
+			await _context.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException)
+		{
+			if (!BasketExists(id))
+				return NotFound();
+			else
+				throw;
+		}
 
-		return Ok(Basket);
+		return Ok();
 	}
 
 	[HttpDelete("{id:int}")]
@@ -69,5 +78,10 @@ public class BasketsController : ControllerBase
 		await _context.SaveChangesAsync();
 
 		return Ok();
+	}
+
+	private bool BasketExists(int id)
+	{
+		return (_context.BasketProducts?.Any(e => e.Id == id)).GetValueOrDefault();
 	}
 }
