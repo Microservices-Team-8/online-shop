@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "OnlineShop.Basket.Api": {
+    "OnlineShop.Baskets.Api": {
       "commandName": "Project",
       "launchUrl": "swagger",
       "environmentVariables": {

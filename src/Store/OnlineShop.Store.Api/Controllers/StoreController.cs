@@ -58,24 +58,24 @@ namespace OnlineShop.Store.Api.Controllers
 			return Task.FromResult<IActionResult>(Ok(product));
 		}
 
-        [HttpPost]
-        public Task<IActionResult> AddUser([FromBody] Product product)
-        {
-            _products.Add(product);
-            return Task.FromResult<IActionResult>(Ok(product));
-        }
+		[HttpPost]
+		public Task<IActionResult> AddUser([FromBody] Product product)
+		{
+			_products.Add(product);
+			return Task.FromResult<IActionResult>(Ok(product));
+		}
 
-        [HttpDelete("{id:int}")]
-        public Task<IActionResult> DeleteProduct(int id)
-        {
-            var product = _products.FirstOrDefault(u => u.Id == id);
+		[HttpDelete("{id:int}")]
+		public Task<IActionResult> DeleteProduct(int id)
+		{
+			var product = _products.FirstOrDefault(u => u.Id == id);
 
-            if (product == null)
-            {
-                return Task.FromResult<IActionResult>(NotFound());
-            }
+			if (product == null)
+			{
+				return Task.FromResult<IActionResult>(NotFound());
+			}
 
-            return Task.FromResult<IActionResult>(Ok());
-        }
-    }
+			return Task.FromResult<IActionResult>(Ok());
+		}
+	}
 }

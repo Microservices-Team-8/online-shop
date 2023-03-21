@@ -1,20 +1,17 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using OnlineShop.Users.Api.Models;
 
-namespace OnlineShop.Users.Api.EF;
+namespace OnlineShop.Baskets.Api.Entities;
 
-public class UsersDbContext : DbContext
+public class BasketsDbContext : DbContext
 {
-	public DbSet<User> Users { get; set; }
-
-	public UsersDbContext()
+	public BasketsDbContext(DbContextOptions<BasketsDbContext> opts)
+		: base(opts)
 	{
 	}
 
-	public UsersDbContext(DbContextOptions<UsersDbContext> options) : base(options)
-	{
-	}
+	public DbSet<Basket> Baskets { get; set; }
+	public DbSet<BasketProduct> BasketProducts { get; set; }
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
