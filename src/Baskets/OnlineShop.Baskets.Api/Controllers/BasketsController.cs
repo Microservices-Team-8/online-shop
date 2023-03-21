@@ -82,6 +82,6 @@ public class BasketsController : ControllerBase
 
 	private bool BasketExists(int id)
 	{
-		return (_context.BasketProducts?.Any(e => e.Id == id)).GetValueOrDefault();
+		return (_context.Baskets?.Any(e => e.Id == id)).GetValueOrDefault();
 	}
 }
