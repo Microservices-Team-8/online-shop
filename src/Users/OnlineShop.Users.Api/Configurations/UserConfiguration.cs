@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineShop.Users.Api.Models;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace OnlineShop.Users.Api.Configurations;
 
@@ -14,6 +17,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 			.HasMaxLength(100);
 		builder.Property(u => u.PhoneNumber)
 			.HasMaxLength(100);
+		
+		builder.Property(x => x.OrderIds)
+			.HasConversion(new ValueConverter<IEnumerable<int>, string>(
+				v => JsonConvert.SerializeObject(v),
+				v => JsonConvert.DeserializeObject<IEnumerable<int>>(v)));
 
 		var users = new List<User>()
 		{
