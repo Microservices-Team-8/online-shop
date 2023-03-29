@@ -3,11 +3,12 @@ using OnlineShop.Baskets.Api.Entities;
 
 var builder = WebApplication.CreateBuilder();
 
-builder.Services.AddControllers();
+var configuration = builder.Configuration;
 
+builder.Services.AddControllers();
 builder.Services.AddDbContext<BasketsDbContext>(options =>
 {
-	options.UseNpgsql("");
+	options.UseNpgsql(configuration.GetConnectionString("PostgresConnection"));
 });
 
 builder.Services.AddEndpointsApiExplorer();

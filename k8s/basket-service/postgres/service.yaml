@@ -1,11 +1,11 @@
 ﻿apiVersion: v1
 kind: Service
 metadata:
-  name: users-service-postgres
+  name: basket-service-postgres
 spec:
   type: ClusterIP
   selector:
-    app: users-service-postgres
+    app: basket-service-postgres
   ports:
     - protocol: TCP
       port: 5432
