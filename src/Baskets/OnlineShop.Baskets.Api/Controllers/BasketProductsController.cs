@@ -4,7 +4,7 @@ using OnlineShop.Baskets.Api.Entities;
 
 namespace OnlineShop.Baskets.Api.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/basketProducts")]
 [ApiController]
 public class BasketProductsController : ControllerBase
 {
