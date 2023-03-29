@@ -18,20 +18,20 @@ public class BasketsController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<Basket>>> GetBaskets()
 	{
-		var Baskets = await _context.Baskets.ToListAsync();
+		var baskets = await _context.Baskets.ToListAsync();
 
-		return Ok(Baskets);
+		return Ok(baskets);
 	}
 
 	[HttpGet("{id:int}")]
 	public async Task<ActionResult<Basket>> GetBasketById(int id)
 	{
-		var Basket = await _context.Baskets.FirstOrDefaultAsync(u => u.Id == id);
+		var basket = await _context.Baskets.FirstOrDefaultAsync(u => u.Id == id);
 
-		if (Basket is null)
+		if (basket is null)
 			return NotFound();
 
-		return Ok(Basket);
+		return Ok(basket);
 	}
 
 	[HttpPost]
@@ -69,12 +69,12 @@ public class BasketsController : ControllerBase
 	[HttpDelete("{id:int}")]
 	public async Task<ActionResult> DeleteBasket(int id)
 	{
-		var Basket = await _context.Baskets.FirstOrDefaultAsync(u => u.Id == id);
+		var basket = await _context.Baskets.FirstOrDefaultAsync(u => u.Id == id);
 
-		if (Basket is null)
+		if (basket is null)
 			return NotFound();
 
-		_context.Baskets.Remove(Basket);
+		_context.Baskets.Remove(basket);
 		await _context.SaveChangesAsync();
 
 		return Ok();

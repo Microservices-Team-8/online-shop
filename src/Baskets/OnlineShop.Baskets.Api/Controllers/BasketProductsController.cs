@@ -4,7 +4,7 @@ using OnlineShop.Baskets.Api.Entities;
 
 namespace OnlineShop.Baskets.Api.Controllers;
 
-[Route("api/basketProducts")]
+[Route("api/baskets/{basketId:int}/products")]
 [ApiController]
 public class BasketProductsController : ControllerBase
 {
@@ -16,43 +16,74 @@ public class BasketProductsController : ControllerBase
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<BasketProduct>>> GetBasketProducts()
+	public async Task<ActionResult<List<BasketProduct>>> GetBasketProducts(int basketId)
 	{
-		if (_context.BasketProducts == null)
-			return NotFound();
+		var basket = await _context.Baskets.Include(b => b.BasketProducts)
+			.FirstOrDefaultAsync(b => b.Id == basketId);
 
-		return await _context.BasketProducts.ToListAsync();
+		if (basket is null)
+		{
+			return NotFound("Basket not found");
+		}
+
+		var basketProducts = basket.BasketProducts;
+		
+		return Ok(basketProducts);
+	}
+	
+	[HttpGet("{productId:int}")]
+	public async Task<ActionResult<BasketProduct>> GetBasketProduct(int basketId, int productId)
+	{
+		var basket = await _context.Baskets.Include(b => b.BasketProducts)
+			.FirstOrDefaultAsync(b => b.Id == basketId);
+
+		if (basket is null)
+		{
+			return NotFound("Basket not found");
+		}
+
+		var product = basket.BasketProducts.FirstOrDefault(p => p.ProductId == productId);
+
+		if (product is null)
+		{
+			return NotFound("Product not found");
+		}
+
+		return Ok(product);
 	}
 
-	[HttpGet("{id}")]
-	public async Task<ActionResult<BasketProduct>> GetBasketProduct(int id)
+	[HttpPut("{productId:int}")]
+	public async Task<IActionResult> UpdateBasketProduct(int basketId, int productId, [FromBody] BasketProduct productToUpdate)
 	{
-		if (_context.BasketProducts == null)
-			return NotFound();
-
-		var basketProduct = await _context.BasketProducts.FindAsync(id);
-
-		if (basketProduct == null)
-			return NotFound();
-
-		return basketProduct;
-	}
-
-	[HttpPut("{id}")]
-	public async Task<IActionResult> UpdateBasketProduct(int id, [FromBody] BasketProduct basketProduct)
-	{
-		if (id != basketProduct.Id)
+		if (productId != productToUpdate.Id)
 			return BadRequest();
 
-		_context.Entry(basketProduct).State = EntityState.Modified;
+		var basket = await _context.Baskets.Include(b => b.BasketProducts)
+			.FirstOrDefaultAsync(b => b.Id == basketId);
 
+		if (basket is null)
+		{
+			return NotFound("Basket not found");
+		}
+
+		var product = basket.BasketProducts.FirstOrDefault(p => p.ProductId == productId);
+
+		if (product is null)
+		{
+			return NotFound("Product not found");
+		}
+
+		product.ProductId = productToUpdate.ProductId;
+		product.Quantity = productToUpdate.Quantity;
+		product.BasketId = productToUpdate.BasketId;
+		
 		try
 		{
 			await _context.SaveChangesAsync();
 		}
 		catch (DbUpdateConcurrencyException)
 		{
-			if (!BasketProductExists(id))
+			if (!BasketProductExists(productId))
 				return NotFound();
 			else
 				throw;
@@ -62,29 +93,58 @@ public class BasketProductsController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task<ActionResult<BasketProduct>> AddBasketProduct([FromBody] BasketProduct basketProduct)
+	public async Task<ActionResult<BasketProduct>> AddBasketProduct(int basketId, [FromBody] BasketProduct basketProduct)
 	{
-		if (_context.BasketProducts == null)
-			return Problem("Entity set 'BasketsDbContext.BasketProducts'  is null.");
+		var basket = await _context.Baskets.Include(b => b.BasketProducts)
+			.FirstOrDefaultAsync(b => b.Id == basketId);
 
-		_context.BasketProducts.Add(basketProduct);
+		if (basket is null)
+		{
+			return NotFound("Basket not found");
+		}
+		
+		basket.BasketProducts.Add(basketProduct);
 		await _context.SaveChangesAsync();
 
-		return Ok(basketProduct);
+		return Created(nameof(GetBasketProduct), new { basketId = basket.Id, productId = basketProduct.Id });
+	}
+	
+	[HttpPost]
+	public async Task<ActionResult<BasketProduct>> AddBasketProducts(int basketId, [FromBody] ICollection<BasketProduct> basketProducts)
+	{
+		var basket = await _context.Baskets.Include(b => b.BasketProducts)
+			.FirstOrDefaultAsync(b => b.Id == basketId);
+
+		if (basket is null)
+		{
+			return NotFound("Basket not found");
+		}
+		
+		basket.BasketProducts.AddRange(basketProducts);
+		await _context.SaveChangesAsync();
+
+		return Created(nameof(GetBasketProducts), new { basketId = basket.Id });
 	}
 
-	[HttpDelete("{id}")]
-	public async Task<ActionResult> DeleteBasketProduct(int id)
+	[HttpDelete("{productId:int}")]
+	public async Task<ActionResult> DeleteBasketProduct(int basketId, int productId)
 	{
-		if (_context.BasketProducts == null)
-			return NotFound();
+		var basket = await _context.Baskets.Include(b => b.BasketProducts)
+			.FirstOrDefaultAsync(b => b.Id == basketId);
 
-		var basketProduct = await _context.BasketProducts.FindAsync(id);
+		if (basket is null)
+		{
+			return NotFound("Basket not found");
+		}
 
-		if (basketProduct == null)
-			return NotFound();
+		var product = basket.BasketProducts.FirstOrDefault(p => p.ProductId == productId);
 
-		_context.BasketProducts.Remove(basketProduct);
+		if (product is null)
+		{
+			return NotFound("Product not found");
+		}
+
+		basket.BasketProducts.Remove(product);
 		await _context.SaveChangesAsync();
 
 		return Ok();
