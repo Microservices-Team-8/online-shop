@@ -8,7 +8,7 @@ spec:
   rules:
     - http:
         paths:
-          - path: /api/basket
+          - path: /api/baskets
             pathType: "Prefix"
             backend:
               service:
