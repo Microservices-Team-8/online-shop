@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OnlineShop.Store.Api.EF;
 using OnlineShop.Store.Api.Models;
 
 namespace OnlineShop.Store.Api.Controllers
@@ -7,75 +9,87 @@ namespace OnlineShop.Store.Api.Controllers
 	[ApiController]
 	public class StoreController : ControllerBase
 	{
-		private readonly ICollection<Product> _products;
+		private readonly StoreDbContext _context;
 
-		public StoreController()
+		public StoreController(StoreDbContext context)
 		{
-			_products = new List<Product>()
-			{
-				new Product
-				{
-					Id = 1,
-					Code = "j34k9",
-					Name = "Samsung S32A600N",
-					Description = "PC Monitor",
-					Price = 12999.99,
-				},
-				new Product
-				{
-					Id = 2,
-					Code = "83kl1",
-					Name = "Akko 5075b Plus",
-					Description = "Keyboard",
-					Price = 4700
-				},
-				new Product
-				{
-					Id= 3,
-					Code = "pw301",
-					Name = "Apple Watch Ultra GPS",
-					Description = "Hand watch",
-					Price = 39999.99
-				}
-			};
+			_context = context;
 		}
 
 		[HttpGet]
-		public Task<IActionResult> GetAllProducts()
+		public async Task<IActionResult> GetAllProducts()
 		{
-			return Task.FromResult<IActionResult>(Ok(_products));
+			var products = _context.Products.ToListAsync();
+			return Ok(products);
 		}
 
 		[HttpGet("{id:int}")]
-		public Task<IActionResult> GetProductById(int id)
+		public async Task<IActionResult> GetProductById(int id)
 		{
-			var product = _products.FirstOrDefault(x => x.Id == id);
+			var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
 
 			if (product == null)
 			{
-				return Task.FromResult<IActionResult>(NotFound());
+				return NotFound();
 			}
-			return Task.FromResult<IActionResult>(Ok(product));
+			return Ok(product);
 		}
 
 		[HttpPost]
-		public Task<IActionResult> AddUser([FromBody] Product product)
+		public async Task<IActionResult> AddProduct([FromBody] Product product)
 		{
-			_products.Add(product);
-			return Task.FromResult<IActionResult>(Ok(product));
+			await _context.Products.AddAsync(product);
+            await _context.SaveChangesAsync();
+
+			return Ok(product);
+		}
+
+		[HttpPut("id:int")]
+		public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product product)
+		{
+			if (id != product.Id)
+			{
+				return BadRequest();
+			}
+
+			_context.Entry(product).State = EntityState.Modified;
+
+            try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!ProductExists(id))
+				{
+					return NotFound();
+				}
+				else
+				{
+					throw;
+				}	
+			}
+			return Ok(product);
 		}
 
 		[HttpDelete("{id:int}")]
-		public Task<IActionResult> DeleteProduct(int id)
+		public async Task<IActionResult> DeleteProduct(int id)
 		{
-			var product = _products.FirstOrDefault(u => u.Id == id);
+			var product = await _context.Products.FirstOrDefaultAsync(u => u.Id == id);
 
 			if (product == null)
 			{
-				return Task.FromResult<IActionResult>(NotFound());
+				return NotFound();
 			}
+			_context.Products.Remove(product);
+            await _context.SaveChangesAsync();
 
-			return Task.FromResult<IActionResult>(Ok());
+            return Ok();
 		}
-	}
+
+        private bool ProductExists(int id)
+        {
+            return (_context.Products?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+    }
 }
