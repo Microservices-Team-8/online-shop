@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Baskets.Api.Entities;
 
@@ -5,7 +6,10 @@ var builder = WebApplication.CreateBuilder();
 
 var configuration = builder.Configuration;
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(opts =>
+{
+	opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
 builder.Services.AddDbContext<BasketsDbContext>(options =>
 {
 	options.UseNpgsql(configuration.GetConnectionString("PostgresConnection"));
