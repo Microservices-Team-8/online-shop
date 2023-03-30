@@ -1,0 +1,32 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-service-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: store-service-postgres
+  template:
+    metadata:
+      labels:
+        app: store-service-postgres
+    spec:
+      containers:
+        - name: store-service-postgres
+          image: postgres:14.1-alpine3.15
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: store-service-postgres-config
+            - secretRef:
+                name: store-service-postgres-secrets
+          volumeMounts:
+            - mountPath: /var/lib/store-postgresql/data/
+              name: store-postgredb
+      volumes:
+        - name: store-postgredb
+          persistentVolumeClaim:
+            claimName: store-service-storage

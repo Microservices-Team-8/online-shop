@@ -10,7 +10,7 @@ function App() {
   const [ordersState, ordersSetState] = useState(UNKNOWN);
 
   useEffect(() => {
-    fetch('/api/basket')
+    fetch('/api/baskets')
         .then((response) => {
             return response.text();
         })
