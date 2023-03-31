@@ -19,7 +19,7 @@ namespace OnlineShop.Store.Api.Controllers
 		[HttpGet]
 		public async Task<IActionResult> GetAllProducts()
 		{
-			var products = _context.Products.ToListAsync();
+			var products = await _context.Products.ToListAsync();
 			return Ok(products);
 		}
 
@@ -28,7 +28,7 @@ namespace OnlineShop.Store.Api.Controllers
 		{
 			var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
 
-			if (product == null)
+			if (product is null)
 			{
 				return NotFound();
 			}
@@ -39,12 +39,12 @@ namespace OnlineShop.Store.Api.Controllers
 		public async Task<IActionResult> AddProduct([FromBody] Product product)
 		{
 			await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
+			await _context.SaveChangesAsync();
 
 			return Ok(product);
 		}
 
-		[HttpPut("id:int")]
+		[HttpPut("{id:int}")]
 		public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product product)
 		{
 			if (id != product.Id)
@@ -54,7 +54,7 @@ namespace OnlineShop.Store.Api.Controllers
 
 			_context.Entry(product).State = EntityState.Modified;
 
-            try
+			try
 			{
 				await _context.SaveChangesAsync();
 			}
@@ -67,7 +67,7 @@ namespace OnlineShop.Store.Api.Controllers
 				else
 				{
 					throw;
-				}	
+				}
 			}
 			return Ok(product);
 		}
@@ -77,19 +77,19 @@ namespace OnlineShop.Store.Api.Controllers
 		{
 			var product = await _context.Products.FirstOrDefaultAsync(u => u.Id == id);
 
-			if (product == null)
+			if (product is null)
 			{
 				return NotFound();
 			}
 			_context.Products.Remove(product);
-            await _context.SaveChangesAsync();
+			await _context.SaveChangesAsync();
 
-            return Ok();
+			return Ok();
 		}
 
-        private bool ProductExists(int id)
-        {
-            return (_context.Products?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-    }
+		private bool ProductExists(int id)
+		{
+			return (_context.Products?.Any(e => e.Id == id)).GetValueOrDefault();
+		}
+	}
 }
