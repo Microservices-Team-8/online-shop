@@ -8,6 +8,7 @@ public class BasketsDbContext : DbContext
 	public BasketsDbContext(DbContextOptions<BasketsDbContext> opts)
 		: base(opts)
 	{
+		Database.EnsureCreated();
 	}
 
 	public DbSet<Basket> Baskets { get; set; }

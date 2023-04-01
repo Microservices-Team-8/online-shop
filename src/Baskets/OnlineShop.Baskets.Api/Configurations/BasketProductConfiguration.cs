@@ -25,8 +25,36 @@ public class BasketProductConfiguration : IEntityTypeConfiguration<BasketProduct
 			new BasketProduct
 			{
 				Id = 2,
-				ProductId = 1,
+				ProductId = 2,
+				Quantity = 50,
+				BasketId = 1,
+			},
+			new BasketProduct
+			{
+				Id = 3,
+				ProductId = 3,
 				Quantity = 10,
+				BasketId = 1,
+			},
+			new BasketProduct
+			{
+				Id = 4,
+				ProductId = 4,
+				Quantity = 100,
+				BasketId = 2,
+			},
+			new BasketProduct
+			{
+				Id = 5,
+				ProductId = 5,
+				Quantity = 20,
+				BasketId = 2,
+			},
+			new BasketProduct
+			{
+				Id = 6,
+				ProductId = 6,
+				Quantity = 70,
 				BasketId = 2,
 			}
 		};

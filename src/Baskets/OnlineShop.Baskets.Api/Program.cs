@@ -6,10 +6,7 @@ var builder = WebApplication.CreateBuilder();
 
 var configuration = builder.Configuration;
 
-builder.Services.AddControllers().AddJsonOptions(opts =>
-{
-	opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-});
+builder.Services.AddControllers();
 builder.Services.AddDbContext<BasketsDbContext>(options =>
 {
 	options.UseNpgsql(configuration.GetConnectionString("PostgresConnection"));

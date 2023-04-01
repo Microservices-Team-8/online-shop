@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace OnlineShop.Baskets.Api.Entities;
 
@@ -12,6 +13,7 @@ public class BasketProduct
 
 	public int BasketId { get; set; }
 
+	[JsonIgnore]
 	[ForeignKey("BasketId")]
 	public Basket Basket { get; set; }
 }

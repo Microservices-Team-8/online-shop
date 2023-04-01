@@ -67,7 +67,7 @@ public class BasketsController : ControllerBase
 	}
 
 	[HttpDelete("{id:int}")]
-	public async Task<ActionResult> DeleteBasket(int id)
+	public async Task<IActionResult> DeleteBasket(int id)
 	{
 		var basket = await _context.Baskets.FirstOrDefaultAsync(u => u.Id == id);
 

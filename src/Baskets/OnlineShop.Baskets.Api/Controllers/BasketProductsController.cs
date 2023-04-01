@@ -127,7 +127,7 @@ public class BasketProductsController : ControllerBase
 	}
 
 	[HttpDelete("{productId:int}")]
-	public async Task<ActionResult> DeleteBasketProduct(int basketId, int productId)
+	public async Task<IActionResult> DeleteBasketProduct(int basketId, int productId)
 	{
 		var basket = await _context.Baskets.Include(b => b.BasketProducts)
 			.FirstOrDefaultAsync(b => b.Id == basketId);
