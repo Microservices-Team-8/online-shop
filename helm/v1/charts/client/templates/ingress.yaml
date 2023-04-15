@@ -1,17 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: client-ingress
+  name: {{ .Release.Name }}-{{ .Chart.Name }}-ingress
   annotations:
     kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
     - http:
         paths:
-          - path: /
+          - path: {{ .Values.ingress.path }}
             pathType: "Prefix"
             backend:
               service:
-                name: client-service
+                name: {{ .Release.Name }}-{{ .Chart.Name }}
                 port:
-                  number: 80
+                  name: {{ .Values.ingress.port }}

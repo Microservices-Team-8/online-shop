@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.selector | toYaml }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.selector | toYaml }}
+    spec:
+      initContainers:
+        - name: {{ .Values.migrations.container.name }}
+          image: {{ .Values.migrations.container.image }}:{{ .Values.migrations.container.tag | default "latest" }}
+          env:
+            - name: ConnectionStrings__PostgresConnection
+              value: "Host={{ .Release.Name }}-{{ .Chart.Name }}-postgres;Port={{ .Values.postgres.port.port }};Database={{ .Values.postgres.configMap.database }};Username={{ .Values.postgres.secrets.username }};Password={{ .Values.postgres.secrets.password }}"
+      containers:
+        - image: {{ .Values.container.image }}
+          imagePullPolicy: Always
+          name: {{ .Values.container.name }}
+          ports:
+            {{- range .Values.service.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+            {{- end }}
+          env:
+            - name: ConnectionStrings__PostgresConnection
+              value: "Host={{ .Release.Name }}-{{ .Chart.Name }}-postgres;Port={{ .Values.postgres.port.port }};Database={{ .Values.postgres.configMap.database }};Username={{ .Values.postgres.secrets.username }};Password={{ .Values.postgres.secrets.password }}"

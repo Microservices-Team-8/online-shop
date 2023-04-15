@@ -1,7 +1,7 @@
 ﻿apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: orders-service-storage
+  name: {{ .Release.Name }}-{{ .Chart.Name }}-postgres
 spec:
   accessModes:
     - ReadWriteOnce
