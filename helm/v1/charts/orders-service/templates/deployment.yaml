@@ -17,7 +17,7 @@ spec:
           image: {{ .Values.migrations.container.image }}:{{ .Values.migrations.container.tag | default "latest" }}
           env:
             - name: ConnectionStrings__PostgresConnection
-              value: "Host={{ .Release.Name }}-{{ .Chart.Name }}-postgres;Port={{ .Values.postgres.port.port }};Database={{ .Values.postgres.configMap.database }};Username={{ .Values.postgres.secrets.username }};Password={{ .Values.postgres.secrets.password }}"
+              value: "Host={{ .Values.postgresql.fullnameOverride }};Port=5432;Database={{ .Values.postgresql.auth.database }};Username={{ .Values.postgresql.auth.username }};Password={{ .Values.postgresql.auth.password }}"
       containers:
         - image: {{ .Values.container.image }}
           imagePullPolicy: Always
@@ -29,4 +29,4 @@ spec:
             {{- end }}
           env:
             - name: ConnectionStrings__PostgresConnection
-              value: "Host={{ .Release.Name }}-{{ .Chart.Name }}-postgres;Port={{ .Values.postgres.port.port }};Database={{ .Values.postgres.configMap.database }};Username={{ .Values.postgres.secrets.username }};Password={{ .Values.postgres.secrets.password }}"
+              value: "Host={{ .Values.postgresql.fullnameOverride }};Port=5432;Database={{ .Values.postgresql.auth.database }};Username={{ .Values.postgresql.auth.username }};Password={{ .Values.postgresql.auth.password }}"

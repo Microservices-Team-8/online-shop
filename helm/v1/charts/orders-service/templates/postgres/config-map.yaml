@@ -1,6 +1,0 @@
-﻿apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Release.Name }}-{{ .Chart.Name }}-postgres
-data:
-  POSTGRES_DB: {{ .Values.postgres.configMap.database }}

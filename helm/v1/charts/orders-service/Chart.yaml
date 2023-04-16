@@ -4,3 +4,7 @@ version: 1.0.0
 name: orders-service
 appVersion: "1.0"
 description: "Orders Service"
+dependencies:
+  - name: postgresql
+    version: 12.2.8
+    repository: https://charts.bitnami.com/bitnami

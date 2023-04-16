@@ -22,23 +22,15 @@ ingress:
   path: "/api/orders"
   port: "http"
 
-postgres:
-  replicaCount: 1
-  selector: "orders-service-postgres"
-  port:
-    name: "default"
-    port: 5432
-    containerPort: 5432
-  secrets:
+postgresql:
+  fullnameOverride: "online-shop-orders-service-postgres"
+  auth:
+    postgresPassword: "Ivanka123"
     username: "postgres"
     password: "Ivanka123"
-  configMap:
     database: "orders"
-  container:
-    name: "orders-service-postgres"
-    image: "postgres"
-    tag: "14.1-alpine3.15"
-    volume:
-      name: "orders-postgredb"
+  primary:
+    persistence: 
+      size: 5Gi
       mountPath: "/var/lib/orders-postgresql/data/"
     
