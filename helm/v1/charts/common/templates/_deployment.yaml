@@ -1,0 +1,49 @@
+﻿{{- define "common.deployment" -}}
+
+{{- $common := dict "Values" .Values.common -}}
+{{- $noCommon := omit .Values "common" -}}
+{{- $overrides := dict "Values" $noCommon -}}
+{{- $noValues := omit . "Values" -}}
+{{- with merge $noValues $overrides $common -}}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.selector | toYaml }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.selector | toYaml }}
+    spec:
+      {{- if .Values.migrations }}
+      initContainers:
+        - name: {{ .Values.migrations.container.name }}
+          image: {{ .Values.migrations.container.image }}:{{ .Values.migrations.container.tag | default "latest" }}
+          {{- if .Values.postgresql }}
+          env:
+            - name: ConnectionStrings__PostgresConnection
+              value: "Host={{ .Values.postgresql.fullnameOverride }};Port=5432;Database={{ .Values.postgresql.auth.database }};Username={{ .Values.postgresql.auth.username }};Password={{ .Values.postgresql.auth.password }}"
+          {{- end }}
+      {{- end }}
+      containers:
+        - image: {{ .Values.container.image }}
+          imagePullPolicy: IfNotPresent
+          name: {{ .Values.container.name }}
+          ports:
+            {{- range .Values.service.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+            {{- end }}
+          {{- if .Values.postgresql }}
+          env:
+            - name: ConnectionStrings__PostgresConnection
+              value: "Host={{ .Values.postgresql.fullnameOverride }};Port=5432;Database={{ .Values.postgresql.auth.database }};Username={{ .Values.postgresql.auth.username }};Password={{ .Values.postgresql.auth.password }}"
+          {{- end }}
+{{- end -}}
+{{- end -}}

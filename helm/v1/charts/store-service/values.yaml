@@ -1,0 +1,35 @@
+﻿replicaCount: 1
+
+selector: "store-service"
+
+container:
+  name: "store-service"
+  image: "idiordiev/online-shop-store-service"
+
+service:
+  ports:
+    - name: http
+      port: 80
+      containerPort: 80
+
+migrations:
+  container:
+    name: "run-migrations"
+    image: "idiordiev/online-shop-store-service-migrations"
+    tag: "latest"
+    
+ingress:
+  path: "/api/store"
+  port: "http"
+
+postgresql:
+  fullnameOverride: "online-shop-store-service-postgres"
+  auth:
+    username: "treon"
+    password: "password"
+    database: "store"
+  primary:
+    persistence: 
+      size: 5Gi
+      mountPath: "/var/lib/store-postgresql/data/"
+    

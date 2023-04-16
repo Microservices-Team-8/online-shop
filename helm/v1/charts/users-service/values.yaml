@@ -1,0 +1,35 @@
+﻿replicaCount: 1
+
+selector: "users-service"
+
+container:
+  name: "users-service"
+  image: "idiordiev/online-shop-users-service"
+
+service:
+  ports:
+    - name: http
+      port: 80
+      containerPort: 80
+
+migrations:
+  container:
+    name: "run-migrations"
+    image: "idiordiev/online-shop-users-service-migrations"
+    tag: "latest"
+    
+ingress:
+  path: "/api/users"
+  port: "http"
+
+postgresql:
+  fullnameOverride: "online-shop-users-service-postgres"
+  auth:
+    username: "idiordiev"
+    password: "xykk8DNXTSu4sHfWOPbH"
+    database: "users"
+  primary:
+    persistence: 
+      size: 5Gi
+      mountPath: "/var/lib/users-postgresql/data/"
+    

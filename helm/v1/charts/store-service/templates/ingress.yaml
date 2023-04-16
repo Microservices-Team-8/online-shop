@@ -1,17 +1,1 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: store-service-ingress
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
-spec:
-  rules:
-    - http:
-        paths:
-          - path: /api/store
-            pathType: "Prefix"
-            backend:
-              service:
-                name: store-service
-                port:
-                  number: 80
+{{- template "common.ingress" . -}}

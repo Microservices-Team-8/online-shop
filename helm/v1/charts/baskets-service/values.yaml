@@ -1,0 +1,35 @@
+﻿replicaCount: 1
+
+selector: "baskets-service"
+
+container:
+  name: "baskets-service"
+  image: "idiordiev/online-shop-basket-service"
+
+service:
+  ports:
+    - name: http
+      port: 80
+      containerPort: 80
+
+migrations:
+  container:
+    name: "run-migrations"
+    image: "idiordiev/online-shop-basket-service-migrations"
+    tag: "latest"
+    
+ingress:
+  path: "/api/baskets"
+  port: "http"
+
+postgresql:
+  fullnameOverride: "online-shop-baskets-service-postgres"
+  auth:
+    username: "ddukhovnyi"
+    password: "AM1vbxBlsb6B3bjTKeKl"
+    database: "baskets"
+  primary:
+    persistence: 
+      size: 5Gi
+      mountPath: "/var/lib/baskets-postgresql/data/"
+    

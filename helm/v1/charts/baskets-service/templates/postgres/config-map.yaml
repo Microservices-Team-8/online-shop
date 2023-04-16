@@ -1,6 +1,0 @@
-﻿apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: basket-service-postgres-config
-data:
-  POSTGRES_DB: basket
