@@ -23,13 +23,9 @@ ingress:
   port: "http"
 
 postgresql:
-  fullnameOverride: "online-shop-baskets-service-postgres"
+  fullnameOverride: "online-shop-postgres"
   auth:
-    username: "ddukhovnyi"
-    password: "AM1vbxBlsb6B3bjTKeKl"
+    username: "postgres"
+    password: "DVypULxSCuElHPOUEobD"
     database: "baskets"
-  primary:
-    persistence: 
-      size: 5Gi
-      mountPath: "/var/lib/baskets-postgresql/data/"
     

@@ -3,11 +3,8 @@ type: application
 version: 1.0.0
 name: users-service
 appVersion: "1.0"
-description: "Online Shop Users Service"
+description: "Users Service"
 dependencies:
-  - name: postgresql
-    version: 12.2.8
-    repository: https://charts.bitnami.com/bitnami
   - name: common
     version: 1.0.0
     repository: file://../common

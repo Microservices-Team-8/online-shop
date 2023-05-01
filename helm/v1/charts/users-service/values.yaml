@@ -23,13 +23,8 @@ ingress:
   port: "http"
 
 postgresql:
-  fullnameOverride: "online-shop-users-service-postgres"
+  fullnameOverride: "online-shop-postgres"
   auth:
-    username: "idiordiev"
-    password: "xykk8DNXTSu4sHfWOPbH"
+    username: "postgres"
+    password: "DVypULxSCuElHPOUEobD"
     database: "users"
-  primary:
-    persistence: 
-      size: 5Gi
-      mountPath: "/var/lib/users-postgresql/data/"
-    

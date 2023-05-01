@@ -1,0 +1,8 @@
+﻿postgresql:
+  fullnameOverride: "online-shop-postgres"
+  auth:
+    postgresPassword: "DVypULxSCuElHPOUEobD"
+  primary:
+    persistence:
+      size: 5Gi
+      mountPath: "/var/lib/postgresql/data/"
