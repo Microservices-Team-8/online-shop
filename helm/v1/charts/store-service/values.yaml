@@ -23,9 +23,6 @@ ingress:
   port: "http"
 
 postgresql:
-  fullnameOverride: "online-shop-postgres"
   auth:
-    username: "postgres"
-    password: "DVypULxSCuElHPOUEobD"
     database: "store"
     

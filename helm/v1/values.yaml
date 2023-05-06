@@ -1,7 +1,16 @@
-﻿postgresql:
-  fullnameOverride: "online-shop-postgres"
-  auth:
-    postgresPassword: "DVypULxSCuElHPOUEobD"
+﻿global:
+  postgresName: "postgres"
+  postgresql: 
+    service: 
+      ports: 
+        postgresql: 5432
+    auth:
+      postgresPassword: "DVypULxSCuElHPOUEobD"
+      username: "onlineshop"
+      password: "yhivJp9hroOoY70pASHC"
+
+postgresql:
+  nameOverride: "postgres"
   primary:
     persistence:
       size: 5Gi

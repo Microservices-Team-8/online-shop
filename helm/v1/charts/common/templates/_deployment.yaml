@@ -28,7 +28,7 @@ spec:
           {{- if .Values.postgresql }}
           env:
             - name: ConnectionStrings__PostgresConnection
-              value: "Host={{ .Values.postgresql.fullnameOverride }};Port=5432;Database={{ .Values.postgresql.auth.database }};Username={{ .Values.postgresql.auth.username }};Password={{ .Values.postgresql.auth.password }}"
+              value: "Host={{ .Release.Name }}-{{ .Values.global.postgresName }};Port={{ .Values.global.postgresql.service.ports.postgresql }};Database={{ .Values.postgresql.auth.database }};Username={{ .Values.global.postgresql.auth.username }};Password={{ .Values.global.postgresql.auth.password }}"
           {{- end }}
       {{- end }}
       containers:
@@ -43,7 +43,7 @@ spec:
           {{- if .Values.postgresql }}
           env:
             - name: ConnectionStrings__PostgresConnection
-              value: "Host={{ .Values.postgresql.fullnameOverride }};Port=5432;Database={{ .Values.postgresql.auth.database }};Username={{ .Values.postgresql.auth.username }};Password={{ .Values.postgresql.auth.password }}"
+              value: "Host={{ .Release.Name }}-{{ .Values.global.postgresName }};Port={{ .Values.global.postgresql.service.ports.postgresql }};Database={{ .Values.postgresql.auth.database }};Username={{ .Values.global.postgresql.auth.username }};Password={{ .Values.global.postgresql.auth.password }}"
           {{- end }}
 {{- end -}}
 {{- end -}}
