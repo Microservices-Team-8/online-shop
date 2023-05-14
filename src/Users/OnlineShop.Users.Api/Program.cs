@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OnlineShop.Users.Api.Controllers;
 using OnlineShop.Users.Api.EF;
 using OnlineShop.Users.Api.Options;
 
@@ -11,6 +12,8 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 	options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddHttpClient<UsersController>();
 builder.Services.AddOptions<ServiceUrls>()
 	.Bind(configuration.GetSection(ServiceUrls.SectionName));
 
