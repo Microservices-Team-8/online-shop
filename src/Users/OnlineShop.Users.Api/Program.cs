@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Users.Api.EF;
+using OnlineShop.Users.Api.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,8 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 	options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddOptions<ServiceUrls>()
+	.Bind(configuration.GetSection(ServiceUrls.SectionName));
 
 var app = builder.Build();
 

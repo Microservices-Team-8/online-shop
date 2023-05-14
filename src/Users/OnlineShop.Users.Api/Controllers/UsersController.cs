@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NuGet.ContentModel;
 using OnlineShop.Users.Api.EF;
 using OnlineShop.Users.Api.Models;
+using OnlineShop.Users.Api.Options;
 
 namespace OnlineShop.Users.Api.Controllers;
 
@@ -11,10 +13,14 @@ namespace OnlineShop.Users.Api.Controllers;
 public class UsersController : ControllerBase
 {
 	private readonly UsersDbContext _context;
+	private readonly HttpClient _httpClient;
+	private readonly ServiceUrls _serviceUrls;
 
-	public UsersController(UsersDbContext context)
+	public UsersController(UsersDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls)
 	{
 		_context = context;
+		_httpClient = httpClient;
+		_serviceUrls = serviceUrls.Value;
 	}
 
 	[HttpGet]
@@ -41,6 +47,14 @@ public class UsersController : ControllerBase
 	{
 		await _context.Users.AddAsync(user);
 		await _context.SaveChangesAsync();
+
+		var response = await _httpClient.PostAsync(_serviceUrls.BasketsServiceUrl,
+			JsonContent.Create($"\"userId\": {user.Id}"));
+
+		if (!response.IsSuccessStatusCode)
+		{
+			return BadRequest("Can't create basket");
+		}
 
 		return Ok(user);
 	}

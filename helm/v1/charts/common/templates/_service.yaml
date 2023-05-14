@@ -21,6 +21,38 @@ spec:
       {{- end }}
   selector:
     app: {{ .Values.selector }}
+    
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "common.fullname" . }}-virtual
+spec:
+  hosts:
+    - {{ include "common.fullname" . }}
+  http:
+    - route:
+        - destination:
+            host: {{ include "common.fullname" . }}
+      timeout: 10s
+      retries:
+        attempts: 2
+        retryOn: 5xx
+        perTryTimeout: 10s
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ include "common.fullname" . }}-destination
+spec:
+  host: {{ include "common.fullname" . }}
+  trafficPolicy:
+    outlierDetection:
+      consecutive5xxErrors: 10
+      interval: 10s
+      baseEjectionTime: 1m
+      maxEjectionPercent: 50
 
 {{- end -}}
 {{- end -}}
