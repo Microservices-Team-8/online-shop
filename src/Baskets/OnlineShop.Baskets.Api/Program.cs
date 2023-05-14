@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using OnlineShop.Baskets.Api.Controllers;
 using OnlineShop.Baskets.Api.Entities;
 
 var builder = WebApplication.CreateBuilder();
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<BasketsDbContext>(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient<BasketsController>();
 
 var app = builder.Build();
 

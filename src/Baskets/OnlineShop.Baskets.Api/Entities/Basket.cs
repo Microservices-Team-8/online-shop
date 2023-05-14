@@ -8,6 +8,5 @@ public class Basket
 
 	public int UserId { get; set; }
 
-	[InverseProperty("Basket")]
-	public List<BasketProduct> BasketProducts { get; set; }
+	public List<int>? BasketProductIds { get; set; }
 }

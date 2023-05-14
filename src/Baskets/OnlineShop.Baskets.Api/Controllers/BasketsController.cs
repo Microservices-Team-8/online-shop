@@ -9,24 +9,24 @@ namespace OnlineShop.Baskets.Api.Controllers;
 public class BasketsController : ControllerBase
 {
 	private readonly BasketsDbContext _context;
+	private readonly HttpClient _httpClient;
+	private readonly IConfiguration _configuration;
 
-	public BasketsController(BasketsDbContext context)
+	public BasketsController(BasketsDbContext context, HttpClient httpClient, IConfiguration configuration)
 	{
 		_context = context;
+		_httpClient = httpClient;
+		_configuration = configuration;
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Basket>>> GetBaskets()
+	public async Task<ActionResult<Basket>> GetBasketByUserId([FromQuery] int userId)
 	{
-		var baskets = await _context.Baskets.ToListAsync();
+		if (!await EnsureUserExists(userId))
+			return BadRequest();
 
-		return Ok(baskets);
-	}
-
-	[HttpGet("{id:int}")]
-	public async Task<ActionResult<Basket>> GetBasketById(int id)
-	{
-		var basket = await _context.Baskets.FirstOrDefaultAsync(u => u.Id == id);
+		var basket = await _context.Baskets
+			.FirstOrDefaultAsync(u => u.UserId == userId);
 
 		if (basket is null)
 			return NotFound();
@@ -35,19 +35,32 @@ public class BasketsController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task<ActionResult<Basket>> AddBasket([FromBody] Basket basket)
+	public async Task<ActionResult<Basket>> CreateBasket([FromBody] int userId)
 	{
-		await _context.Baskets.AddAsync(basket);
+		if(!await EnsureUserExists(userId))
+			return BadRequest();
+
+		Basket newBasket = new()
+		{
+			UserId = userId,
+		};
+
+		await _context.Baskets.AddAsync(newBasket);
 		await _context.SaveChangesAsync();
 
-		return Ok(basket);
+		return Ok(newBasket);
 	}
 
-	[HttpPut("{id:int}")]
-	public async Task<ActionResult<Basket>> UpdateBasket(int id, [FromBody] Basket basket)
+	[HttpPost("{id:int}/addProduct")]
+	public async Task<ActionResult<Basket>> AddProductsToBasket(int id, [FromBody] int[] productIds)
 	{
-		if (id != basket.Id)
+		var basket = await _context.Baskets.FirstOrDefaultAsync(b => b.Id == id);
+
+		if (basket is null ||
+			!await EnsureProductIdsExists(productIds))
 			return BadRequest();
+
+		basket.BasketProductIds?.AddRange(productIds);
 
 		_context.Entry(basket).State = EntityState.Modified;
 
@@ -80,8 +93,36 @@ public class BasketsController : ControllerBase
 		return Ok();
 	}
 
+	private async Task<bool> EnsureUserExists(int userId)
+	{
+		string uri = _configuration.GetValue<string>("MicroserviceAPIs:UsersService");
+
+		var response = await _httpClient.GetAsync(uri + $"/{userId}");
+
+		if (!response.IsSuccessStatusCode)
+			return false;
+
+		return true;
+	}
+
+	private async Task<bool> EnsureProductIdsExists(int[] productIds)
+	{
+		string uri = _configuration.GetValue<string>("MicroserviceAPIs:StoreService");
+
+		foreach (int id in productIds)
+		{
+			var response = await _httpClient.GetAsync(uri + $"/{id}");
+
+			if (!response.IsSuccessStatusCode)
+				return false;
+		}
+
+		return true;
+	}
+
 	private bool BasketExists(int id)
 	{
-		return (_context.Baskets?.Any(e => e.Id == id)).GetValueOrDefault();
+		return (_context.Baskets?.Any(e => e.Id == id))
+			.GetValueOrDefault();
 	}
 }

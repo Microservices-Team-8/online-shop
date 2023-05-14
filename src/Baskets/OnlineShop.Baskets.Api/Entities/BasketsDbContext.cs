@@ -11,7 +11,6 @@ public class BasketsDbContext : DbContext
 	}
 
 	public DbSet<Basket> Baskets { get; set; }
-	public DbSet<BasketProduct> BasketProducts { get; set; }
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
