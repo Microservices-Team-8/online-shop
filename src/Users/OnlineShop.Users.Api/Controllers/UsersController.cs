@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using NuGet.ContentModel;
 using OnlineShop.Users.Api.EF;
 using OnlineShop.Users.Api.Models;
 using OnlineShop.Users.Api.Options;
@@ -48,14 +47,16 @@ public class UsersController : ControllerBase
 		await _context.Users.AddAsync(user);
 		await _context.SaveChangesAsync();
 
-		var response = await _httpClient.PostAsync(_serviceUrls.BasketsServiceUrl,
-			JsonContent.Create($"\"userId\": {user.Id}"));
+		var response = await _httpClient.PostAsync(_serviceUrls.BasketsService,
+			JsonContent.Create(new { userId = user.Id, basketProducts = Array.Empty<int>() }));
 
 		if (!response.IsSuccessStatusCode)
 		{
-			return BadRequest("Can't create basket");
+			_context.Users.Remove(user);
+			await _context.SaveChangesAsync();
+			return BadRequest(await response.Content.ReadAsStringAsync());
 		}
-
+		
 		return Ok(user);
 	}
 
@@ -75,8 +76,7 @@ public class UsersController : ControllerBase
 		{
 			if (!UserExists(id))
 				return NotFound();
-			else
-				throw;
+			throw;
 		}
 
 		return Ok(userToUpdate);

@@ -13,9 +13,9 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHttpClient<UsersController>();
 builder.Services.AddOptions<ServiceUrls>()
 	.Bind(configuration.GetSection(ServiceUrls.SectionName));
+builder.Services.AddHttpClient<UsersController>();
 
 var app = builder.Build();
 

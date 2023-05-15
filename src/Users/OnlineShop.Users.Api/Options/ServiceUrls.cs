@@ -4,5 +4,5 @@ public class ServiceUrls
 {
     public const string SectionName = "ServiceUrls";
     
-    public string BasketsServiceUrl { get; set; } = string.Empty;
+    public string BasketsService { get; set; } = string.Empty;
 }
