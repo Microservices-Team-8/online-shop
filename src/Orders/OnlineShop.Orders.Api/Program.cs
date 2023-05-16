@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using OnlineShop.Orders.Api.Controllers;
 using OnlineShop.Orders.Api.EF;
+using OnlineShop.Orders.Api.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,10 @@ builder.Services.AddControllers()
 builder.Services.AddDbContext<OrdersDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection"),
         builder => builder.MigrationsAssembly(typeof(OrdersDbContext).Assembly.FullName)));
+
+builder.Services.AddOptions<ServiceUrls>()
+    .Bind(builder.Configuration.GetSection(ServiceUrls.SectionName));
+builder.Services.AddHttpClient<OrdersController>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
