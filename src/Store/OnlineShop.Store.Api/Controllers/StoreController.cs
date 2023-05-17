@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Store.Api.EF;
 using OnlineShop.Store.Api.Models;
+using Microsoft.Extensions.Options;
+using OnlineShop.Store.Api.Options;
+using Newtonsoft.Json;
 
 namespace OnlineShop.Store.Api.Controllers
 {
@@ -10,11 +13,16 @@ namespace OnlineShop.Store.Api.Controllers
 	public class StoreController : ControllerBase
 	{
 		private readonly StoreDbContext _context;
+        private readonly HttpClient _httpClient;
+        private readonly ServiceUrls _serviceUrls;
 
-		public StoreController(StoreDbContext context)
+
+        public StoreController(StoreDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls)
 		{
 			_context = context;
-		}
+            _httpClient = httpClient;
+            _serviceUrls = serviceUrls.Value;
+        }
 
 		[HttpGet]
 		public async Task<IActionResult> GetAllProducts()
@@ -41,7 +49,7 @@ namespace OnlineShop.Store.Api.Controllers
 			await _context.Products.AddAsync(product);
 			await _context.SaveChangesAsync();
 
-			return Ok(product);
+            return Ok(product);
 		}
 
 		[HttpPut("{id:int}")]
@@ -75,7 +83,23 @@ namespace OnlineShop.Store.Api.Controllers
 		[HttpDelete("{id:int}")]
 		public async Task<IActionResult> DeleteProduct(int id)
 		{
-			var product = await _context.Products.FirstOrDefaultAsync(u => u.Id == id);
+            var response = await _httpClient.GetAsync(_serviceUrls.BasketsService + $"/{id}");
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest(await response.Content.ReadAsStringAsync());
+
+            // Parse the response content to check if the product exists in any basket
+            var content = await response.Content.ReadAsStringAsync();
+            var responseObject = JsonConvert.DeserializeObject<dynamic>(content);
+            bool existsInBasket = responseObject.existsInBasket;
+
+            if (existsInBasket)
+            {
+                // If the product exists in any basket, return a BadRequest
+                return BadRequest("Product exists in a basket and cannot be deleted.");
+            }     
+
+            var product = await _context.Products.FirstOrDefaultAsync(u => u.Id == id);
 
 			if (product is null)
 			{
