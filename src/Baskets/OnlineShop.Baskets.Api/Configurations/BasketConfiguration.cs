@@ -10,9 +10,6 @@ public class BasketConfiguration : IEntityTypeConfiguration<Basket>
 	public void Configure(EntityTypeBuilder<Basket> builder)
 	{
 		builder.HasKey(b => b.Id);
-		builder.HasMany(b => b.BasketProducts)
-			.WithOne(bp => bp.Basket)
-			.HasForeignKey(bp => bp.BasketId);
 
 		var basketProducts = new List<Basket>
 		{
