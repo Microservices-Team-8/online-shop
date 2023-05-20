@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OnlineShop.Baskets.Api.Entities;
@@ -11,9 +12,11 @@ using OnlineShop.Baskets.Api.Entities;
 namespace OnlineShop.Baskets.Api.Migrations
 {
     [DbContext(typeof(BasketsDbContext))]
-    partial class BasketsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230520141825_ChangeStructure")]
+    partial class ChangeStructure
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

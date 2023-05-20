@@ -25,25 +25,45 @@ spec:
       initContainers:
         - name: {{ .Values.migrations.container.name }}
           image: {{ .Values.migrations.container.image }}:{{ .Values.migrations.container.tag | default "latest" }}
-          {{- if .Values.postgresql }}
           env:
+            {{- if .Values.postgresql }}
             - name: ConnectionStrings__PostgresConnection
               value: "Host={{ .Release.Name }}-{{ .Values.global.postgresName }};Port={{ .Values.global.postgresql.service.ports.postgresql }};Database={{ .Values.postgresql.auth.database }};Username={{ .Values.global.postgresql.auth.username }};Password={{ .Values.global.postgresql.auth.password }}"
-          {{- end }}
+            {{- end }}
+            {{- if .Values.global.services }}
+            - name: ServiceUrls__BasketsService
+              value: "http://{{ .Release.Name }}-{{ .Values.global.services.basketsService }}/api/baskets"
+            - name: ServiceUrls__OrdersService
+              value: "http://{{ .Release.Name }}-{{ .Values.global.services.ordersService }}/api/orders"
+            - name: ServiceUrls__StoreService
+              value: "http://{{ .Release.Name }}-{{ .Values.global.services.storeService }}/api/store"
+            - name: ServiceUrls__UsersService
+              value: "http://{{ .Release.Name }}-{{ .Values.global.services.usersService }}/api/users"
+            {{- end }}
       {{- end }}
       containers:
         - image: {{ .Values.container.image }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: {{ .Values.container.name }}
           ports:
             {{- range .Values.service.ports }}
             - name: {{ .name }}
               containerPort: {{ .containerPort }}
             {{- end }}
-          {{- if .Values.postgresql }}
           env:
+            {{- if .Values.postgresql }}
             - name: ConnectionStrings__PostgresConnection
               value: "Host={{ .Release.Name }}-{{ .Values.global.postgresName }};Port={{ .Values.global.postgresql.service.ports.postgresql }};Database={{ .Values.postgresql.auth.database }};Username={{ .Values.global.postgresql.auth.username }};Password={{ .Values.global.postgresql.auth.password }}"
-          {{- end }}
+            {{- end }}
+            {{- if .Values.global.services }}
+            - name: ServiceUrls__BasketsService
+              value: "http://{{ .Release.Name }}-{{ .Values.global.services.basketsService }}/api/baskets"
+            - name: ServiceUrls__OrdersService
+              value: "http://{{ .Release.Name }}-{{ .Values.global.services.ordersService }}/api/orders"
+            - name: ServiceUrls__StoreService
+              value: "http://{{ .Release.Name }}-{{ .Values.global.services.storeService }}/api/store"
+            - name: ServiceUrls__UsersService
+              value: "http://{{ .Release.Name }}-{{ .Values.global.services.usersService }}/api/users"
+            {{- end }}
 {{- end -}}
 {{- end -}}

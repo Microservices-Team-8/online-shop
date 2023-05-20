@@ -5,6 +5,7 @@ using OnlineShop.Store.Api.Models;
 using Microsoft.Extensions.Options;
 using OnlineShop.Store.Api.Options;
 using Newtonsoft.Json;
+using OnlineShop.Store.Api.BackgroundServices;
 
 namespace OnlineShop.Store.Api.Controllers
 {
@@ -15,20 +16,36 @@ namespace OnlineShop.Store.Api.Controllers
 		private readonly StoreDbContext _context;
         private readonly HttpClient _httpClient;
         private readonly ServiceUrls _serviceUrls;
-
-
-        public StoreController(StoreDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls)
+        private readonly AvailabilityService _availabilityService;
+        
+        public StoreController(StoreDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls,
+	        AvailabilityService availabilityService)
 		{
 			_context = context;
             _httpClient = httpClient;
+            _availabilityService = availabilityService;
             _serviceUrls = serviceUrls.Value;
         }
 
 		[HttpGet]
 		public async Task<IActionResult> GetAllProducts()
 		{
+			if (_availabilityService.IsBroken())
+			{
+				return StatusCode(503);
+			}
+
 			var products = await _context.Products.ToListAsync();
+			
 			return Ok(products);
+		}
+		
+		[HttpGet("break")]
+		public async Task<IActionResult> Break()
+		{
+			_availabilityService.Break();
+
+			return Ok();
 		}
 
 		[HttpGet("{id:int}")]

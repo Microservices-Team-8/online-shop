@@ -35,20 +35,20 @@ public class BasketsController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task<ActionResult<Basket>> CreateBasket([FromBody] int userId)
+	public async Task<ActionResult<Basket>> CreateBasket([FromBody] Basket basket)
 	{
-		if(!await EnsureUserExists(userId))
-			return BadRequest();
-
-		Basket newBasket = new()
+		Console.WriteLine("Test");
+		if (Random.Shared.NextDouble() < 0.4)
 		{
-			UserId = userId,
-		};
+			Console.WriteLine("Waiting");
+			await Task.Delay(TimeSpan.FromSeconds(12));
+			return StatusCode(500);
+		}
 
-		await _context.Baskets.AddAsync(newBasket);
+		await _context.Baskets.AddAsync(basket);
 		await _context.SaveChangesAsync();
 
-		return Ok(newBasket);
+		return Ok(basket);
 	}
 
 	[HttpPost("{id:int}/addProduct")]
@@ -95,7 +95,7 @@ public class BasketsController : ControllerBase
 
 	private async Task<bool> EnsureUserExists(int userId)
 	{
-		string uri = _configuration.GetValue<string>("MicroserviceAPIs:UsersService");
+		string uri = _configuration.GetValue<string>("ServiceUrls:UsersService");
 
 		var response = await _httpClient.GetAsync(uri + $"/{userId}");
 
@@ -107,7 +107,7 @@ public class BasketsController : ControllerBase
 
 	private async Task<bool> EnsureProductIdsExists(int[] productIds)
 	{
-		string uri = _configuration.GetValue<string>("MicroserviceAPIs:StoreService");
+		string uri = _configuration.GetValue<string>("ServiceUrls:StoreService");
 
 		foreach (int id in productIds)
 		{

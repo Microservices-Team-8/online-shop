@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OnlineShop.Store.Api.BackgroundServices;
 using OnlineShop.Store.Api.Controllers;
 using OnlineShop.Store.Api.EF;
 using OnlineShop.Store.Api.Options;
@@ -21,7 +22,7 @@ namespace OnlineShop.Store.Api
 					.Bind(builder.Configuration.GetSection(ServiceUrls.SectionName));
             builder.Services.AddHttpClient<StoreController>();
 
-
+            builder.Services.AddSingleton<AvailabilityService>();
             builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 
