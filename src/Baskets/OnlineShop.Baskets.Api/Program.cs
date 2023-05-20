@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Baskets.Api.Controllers;
 using OnlineShop.Baskets.Api.Entities;
+using OnlineShop.Baskets.Api.Options;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -16,6 +17,12 @@ builder.Services.AddDbContext<BasketsDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<BasketsController>();
+
+builder.Services.AddOptions<ServiceUrls>()
+	.Bind(configuration.GetSection(ServiceUrls.SectionName));
+builder.Services.AddOptions<RabbitMQOptions>()
+	.Bind(configuration.GetSection(RabbitMQOptions.SectionName));
+
 
 var app = builder.Build();
 
