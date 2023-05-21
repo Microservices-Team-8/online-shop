@@ -1,6 +1,6 @@
 ﻿namespace OnlineShop.EntityHistory.Console;
 
-public class EntityChange
+public class EntityChangedMessage
 {
     public string EntityName { get; set; }
     public int EntityId { get; set; }

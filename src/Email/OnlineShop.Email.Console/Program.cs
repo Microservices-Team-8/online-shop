@@ -4,10 +4,11 @@ using OnlineShop.Email.Console;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-var configBuilder = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json");
+var config = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
 
-var config = configBuilder.Build();
+var rabbitMqOptions = config.GetValue<RabbitMQOptions>(RabbitMQOptions.SectionName);
 
 var factory = new ConnectionFactory
 {
@@ -16,22 +17,20 @@ var factory = new ConnectionFactory
 var connection = factory.CreateConnection();
 var channel = connection.CreateModel();
 
-channel.QueueDeclare(
-    queue: "email",
-    durable: false,
-    exclusive: false,
-    autoDelete: false,
-    arguments: null);
-    
+channel.ExchangeDeclare(rabbitMqOptions.EmailExchange, "fanout" , false, false, null);
+		
+channel.QueueDeclare(rabbitMqOptions.EmailSendQueue, false, false, false, null);
+channel.QueueBind(rabbitMqOptions.EmailExchange, rabbitMqOptions.EmailSendQueue, "send");
+
 var consumer = new EventingBasicConsumer(channel);
 consumer.Received += (model, eventArgs) =>
 {
     var email = JsonSerializer.Deserialize<Email>(eventArgs.Body.Span);
-    SendEmail(email!);
+    SendEmail(email);
 };
     
 channel.BasicConsume(
-    queue: "email",
+    queue: rabbitMqOptions.EmailSendQueue,
     autoAck: true,
     consumer: consumer);
 
