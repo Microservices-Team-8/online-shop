@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OnlineShop.EntityHistory.Migrations": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

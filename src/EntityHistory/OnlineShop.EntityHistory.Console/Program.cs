@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OnlineShop.EntityHistory.Console;
 using RabbitMQ.Client;
@@ -8,7 +9,11 @@ var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 
-var dbContext = new EntityHistoryDbContext(config);
+var options = new DbContextOptionsBuilder<EntityHistoryDbContext>()
+    .UseNpgsql(config.GetConnectionString("PostgresConnection"))
+    .Options;
+
+var dbContext = new EntityHistoryDbContext(options);
 var rabbitMqOptions = config.GetValue<RabbitMQOptions>(RabbitMQOptions.SectionName);
 
 var factory = new ConnectionFactory

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OnlineShop.Store.Migrations": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

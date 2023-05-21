@@ -6,10 +6,6 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 
-# Install the dotnet-ef tool and update the PATH environment variable
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="${PATH}:/root/.dotnet/tools"
-
 COPY ["OnlineShop.Users.Api.csproj", "/src/Users/OnlineShop.Users.Api/"]
 RUN dotnet restore "/src/Users/OnlineShop.Users.Api/OnlineShop.Users.Api.csproj"
 WORKDIR "/src/Users/OnlineShop.Users.Api"
