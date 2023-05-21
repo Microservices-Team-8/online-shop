@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnlineShop.Orders.Api.EF;
 using OnlineShop.Orders.Api.Models;
 using OnlineShop.Orders.Api.Options;
+using RabbitMQ.Client;
 
 namespace OnlineShop.Orders.Api.Controllers
 {
@@ -11,12 +13,14 @@ namespace OnlineShop.Orders.Api.Controllers
 	[ApiController]
 	public class OrdersController : ControllerBase
 	{
-
         private readonly OrdersDbContext _context;
         private readonly HttpClient _httpClient;
-        private readonly ServiceUrls _serviceUrls;
+        private readonly ServiceUrls _serviceUrls; 
+        private readonly RabbitMQOptions _rabbitMqOptions;
+        private readonly IModel _channel;
 
-        public OrdersController(OrdersDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls)
+        public OrdersController(OrdersDbContext context, HttpClient httpClient,
+            IOptions<ServiceUrls> serviceUrls, IOptions<RabbitMQOptions> rabbitMqOptions)
         {
             _context = context;
             var items = new List<Order>
@@ -60,7 +64,31 @@ namespace OnlineShop.Orders.Api.Controllers
             _context.AddRange(items);
             _context.SaveChanges();
             _httpClient = httpClient;
-            _serviceUrls = serviceUrls.Value;
+            _serviceUrls = serviceUrls.Value; 
+            _rabbitMqOptions = rabbitMqOptions.Value;
+
+
+            var connectionFactory = new ConnectionFactory { HostName = _rabbitMqOptions.Host };
+            using var connection = connectionFactory.CreateConnection();
+            var channel = connection.CreateModel();
+
+            channel.ExchangeDeclare(_rabbitMqOptions.EmailExchange, "fanout", false, false, null);
+
+            channel.QueueDeclare(_rabbitMqOptions.EmailSendQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EmailExchange, _rabbitMqOptions.EmailSendQueue, "send");
+
+            channel.ExchangeDeclare(_rabbitMqOptions.EntityExchange, "direct", false, false, null);
+
+            channel.QueueDeclare(_rabbitMqOptions.EntityCreateQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EntityExchange, _rabbitMqOptions.EntityCreateQueue, "create");
+
+            channel.QueueDeclare(_rabbitMqOptions.EntityUpdateQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EntityExchange, _rabbitMqOptions.EntityUpdateQueue, "update");
+
+            channel.QueueDeclare(_rabbitMqOptions.EntityDeleteQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EntityExchange, _rabbitMqOptions.EntityDeleteQueue, "delete");
+
+            _channel = channel;
         }
 
         [HttpGet]
