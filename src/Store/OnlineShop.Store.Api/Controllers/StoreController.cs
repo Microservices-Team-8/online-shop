@@ -32,6 +32,7 @@ namespace OnlineShop.Store.Api.Controllers
 		{
 			if (_availabilityService.IsBroken())
 			{
+				await Task.Delay(TimeSpan.FromSeconds(15));
 				return StatusCode(503);
 			}
 

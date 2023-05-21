@@ -37,10 +37,8 @@ public class BasketsController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<Basket>> CreateBasket([FromBody] Basket basket)
 	{
-		Console.WriteLine("Test");
 		if (Random.Shared.NextDouble() < 0.4)
 		{
-			Console.WriteLine("Waiting");
 			await Task.Delay(TimeSpan.FromSeconds(12));
 			return StatusCode(500);
 		}
