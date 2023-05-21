@@ -1,6 +1,9 @@
 ﻿namespace OnlineShop.Orders.Api.Enums
 {
-    public class EntityChangeType
+    public enum EntityChangeType
     {
+        Created,
+        Updated,
+        Deleted
     }
 }

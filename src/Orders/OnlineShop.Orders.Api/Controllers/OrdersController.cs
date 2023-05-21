@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnlineShop.Orders.Api.EF;
+using OnlineShop.Orders.Api.Enums;
 using OnlineShop.Orders.Api.Models;
 using OnlineShop.Orders.Api.Options;
 using RabbitMQ.Client;
+using System.Text;
 
 namespace OnlineShop.Orders.Api.Controllers
 {
@@ -116,6 +118,28 @@ namespace OnlineShop.Orders.Api.Controllers
 
             var res = await _context.Orders.AddAsync(order);
 			await _context.SaveChangesAsync();
+            var responseData = await response.Content.ReadAsStringAsync();
+            var user = Newtonsoft.Json.JsonConvert.DeserializeObject<User>(responseData);
+
+            var email = new Models.Email()
+            {
+                To = user.Email,
+                Subject = "Your order is successfuly created!",
+                Body = $"Hi, {user.FirstName} {user.LastName}! Your order cost {order.TotalPrice}. For details go to your cabinet."
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EmailExchange, "send", null,
+                Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(email)));
+
+            var entityChangedMessage = new EntityChangedMessage()
+            {
+                EntityName = "Orders",
+                EntityId = res.Entity.Id,
+                ChangeType = EntityChangeType.Created,
+                NewValue = System.Text.Json.JsonSerializer.Serialize(user)
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
+                Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(entityChangedMessage)));
+
 
             return Ok(res.Entity);
 		}
@@ -129,6 +153,30 @@ namespace OnlineShop.Orders.Api.Controllers
 
             _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
+
+            var response = await _httpClient.GetAsync(_serviceUrls.UsersService + $"/{order.UserId}");
+            var responseData = await response.Content.ReadAsStringAsync();
+            var user = Newtonsoft.Json.JsonConvert.DeserializeObject<User>(responseData);
+
+            var email = new Models.Email()
+            {
+                To = user.Email,
+                Subject = "Your order is successfuly canceled!",
+                Body = $"Hi, {user.FirstName} {user.LastName}! Your order {order.Id} is canceled. For details go to your cabinet."
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EmailExchange, "send", null,
+                Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(email)));
+
+            var entityChangedMessage = new EntityChangedMessage()
+            {
+                EntityName = "Orders",
+                EntityId = order.Id,
+                ChangeType = EntityChangeType.Deleted,
+                NewValue = System.Text.Json.JsonSerializer.Serialize(user)
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "delete", null,
+                Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(entityChangedMessage)));
+
 
             return Ok();
         }

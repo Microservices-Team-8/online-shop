@@ -33,11 +33,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnlineShop.Users.Migrations
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnlineShop.EntityHistory.Migrations", "src\EntityHistory\OnlineShop.EntityHistory.Migrations\OnlineShop.EntityHistory.Migrations.csproj", "{D7E2520B-E185-4792-B3C1-2B6BD7E4A524}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineShop.Store.Migrations", "src\Store\OnlineShop.Store.Migrations\OnlineShop.Store.Migrations.csproj", "{B361AF25-8692-46AD-969B-6EB3F5630316}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnlineShop.Store.Migrations", "src\Store\OnlineShop.Store.Migrations\OnlineShop.Store.Migrations.csproj", "{B361AF25-8692-46AD-969B-6EB3F5630316}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineShop.Orders.Migrations", "src\Orders\OnlineShop.Orders.Migrations\OnlineShop.Orders.Migrations.csproj", "{AD93F6C3-BA52-4171-BBD2-66B59016A545}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnlineShop.Orders.Migrations", "src\Orders\OnlineShop.Orders.Migrations\OnlineShop.Orders.Migrations.csproj", "{AD93F6C3-BA52-4171-BBD2-66B59016A545}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineShop.Baskets.Migrations", "src\Baskets\OnlineShop.Baskets.Migrations\OnlineShop.Baskets.Migrations.csproj", "{FFE24FD4-A677-44AE-B5F1-F137BEBC763D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnlineShop.Baskets.Migrations", "src\Baskets\OnlineShop.Baskets.Migrations\OnlineShop.Baskets.Migrations.csproj", "{FFE24FD4-A677-44AE-B5F1-F137BEBC763D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
