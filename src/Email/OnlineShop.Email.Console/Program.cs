@@ -6,6 +6,7 @@ using RabbitMQ.Client.Events;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
     .Build();
 
 var rabbitMqOptions = config.GetValue<RabbitMQOptions>(RabbitMQOptions.SectionName);

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
@@ -11,7 +11,7 @@ WORKDIR "/src/src/EntityHistory/OnlineShop.EntityHistory.Migrations"
 RUN dotnet build "OnlineShop.EntityHistory.Migrations.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "OnlineShop.EntityHistory.Migrations.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "OnlineShop.EntityHistory.Migrations.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app

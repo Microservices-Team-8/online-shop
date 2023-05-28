@@ -7,6 +7,7 @@ using RabbitMQ.Client.Events;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
     .Build();
 
 var options = new DbContextOptionsBuilder<EntityHistoryDbContext>()

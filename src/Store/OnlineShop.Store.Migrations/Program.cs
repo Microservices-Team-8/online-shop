@@ -4,10 +4,14 @@ using OnlineShop.Store.Api.EF;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
     .Build();
 
+var connectionString = config.GetConnectionString("PostgresConnection");
+Console.WriteLine(connectionString);
+
 var options = new DbContextOptionsBuilder<StoreDbContext>()
-    .UseNpgsql(config.GetConnectionString("PostgresConnection"))
+    .UseNpgsql(connectionString)
     .Options;
 
 var dbContext = new StoreDbContext(options);
