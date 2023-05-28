@@ -1,7 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OnlineShop.Store.Api.EF;
 using OnlineShop.Store.Api.Models;
+using OnlineShop.Store.Api.Options;
+using RabbitMQ.Client;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text;
+using OnlineShop.Store.Api.Enums;
 
 namespace OnlineShop.Store.Api.Controllers
 {
@@ -10,11 +17,41 @@ namespace OnlineShop.Store.Api.Controllers
 	public class StoreController : ControllerBase
 	{
 		private readonly StoreDbContext _context;
+        private readonly HttpClient _httpClient;
+        private readonly RabbitMQOptions _rabbitMqOptions;
+        private readonly ServiceUrls _serviceUrls;
+        private readonly IModel _channel;
 
-		public StoreController(StoreDbContext context)
-		{
+        public StoreController(StoreDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls,
+        IOptions<RabbitMQOptions> rabbitMqOptions)
+        {
 			_context = context;
-		}
+            _httpClient = httpClient;
+            _rabbitMqOptions = rabbitMqOptions.Value;
+            _serviceUrls = serviceUrls.Value;
+
+            var connectionFactory = new ConnectionFactory { HostName = _rabbitMqOptions.Host };
+            using var connection = connectionFactory.CreateConnection();
+            var channel = connection.CreateModel();
+
+            channel.ExchangeDeclare(_rabbitMqOptions.EmailExchange, "fanout", false, false, null);
+
+            channel.QueueDeclare(_rabbitMqOptions.EmailSendQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EmailExchange, _rabbitMqOptions.EmailSendQueue, "send");
+
+            channel.ExchangeDeclare(_rabbitMqOptions.EntityExchange, "direct", false, false, null);
+
+            channel.QueueDeclare(_rabbitMqOptions.EntityCreateQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EntityExchange, _rabbitMqOptions.EntityCreateQueue, "create");
+
+            channel.QueueDeclare(_rabbitMqOptions.EntityUpdateQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EntityExchange, _rabbitMqOptions.EntityUpdateQueue, "update");
+
+            channel.QueueDeclare(_rabbitMqOptions.EntityDeleteQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EntityExchange, _rabbitMqOptions.EntityDeleteQueue, "delete");
+
+            _channel = channel;
+        }
 
 		[HttpGet]
 		public async Task<IActionResult> GetAllProducts()
@@ -41,7 +78,17 @@ namespace OnlineShop.Store.Api.Controllers
 			await _context.Products.AddAsync(product);
 			await _context.SaveChangesAsync();
 
-			return Ok(product);
+            var entityChangedMessage = new EntityChangedMessage()
+            {
+                EntityName = "Store",
+                EntityId = product.Id,
+                ChangeType = EntityChangeType.Created,
+                NewValue = JsonSerializer.Serialize(product)
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
+                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+            return Ok(product);
 		}
 
 		[HttpPut("{id:int}")]
@@ -69,7 +116,19 @@ namespace OnlineShop.Store.Api.Controllers
 					throw;
 				}
 			}
-			return Ok(product);
+
+            var entityChangedMessage = new EntityChangedMessage()
+            {
+                EntityName = "Store",
+                EntityId = id,
+                ChangeType = EntityChangeType.Updated,
+                NewValue = JsonSerializer.Serialize(product)
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "update", null,
+                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+
+            return Ok(product);
 		}
 
 		[HttpDelete("{id:int}")]
@@ -84,7 +143,17 @@ namespace OnlineShop.Store.Api.Controllers
 			_context.Products.Remove(product);
 			await _context.SaveChangesAsync();
 
-			return Ok();
+            var entityChangedMessage = new EntityChangedMessage()
+            {
+                EntityName = "Store",
+                EntityId = id,
+                ChangeType = EntityChangeType.Deleted
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "delete", null,
+                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+
+            return Ok();
 		}
 
 		private bool ProductExists(int id)
