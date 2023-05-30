@@ -4,7 +4,6 @@ using OnlineShop.Baskets.Api.Entities;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
-    .AddEnvironmentVariables()
     .Build();
 
 var options = new DbContextOptionsBuilder<BasketsDbContext>()

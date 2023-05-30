@@ -5,10 +5,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["src/Orders/OnlineShop.Orders.Api/OnlineShop.Orders.Api.csproj", "src/Orders/OnlineShop.Orders.Api/"]
-RUN dotnet restore "src/Orders/OnlineShop.Orders.Api/OnlineShop.Orders.Api.csproj"
+COPY ["OnlineShop.Orders.Api.csproj", "/src/Orders/OnlineShop.Orders.Api/"]
+RUN dotnet restore "/src/Orders/OnlineShop.Orders.Api/OnlineShop.Orders.Api.csproj"
+WORKDIR "/src/Orders/OnlineShop.Orders.Api"
 COPY . .
-WORKDIR "/src/src/Orders/OnlineShop.Orders.Api"
 RUN dotnet build "OnlineShop.Orders.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
