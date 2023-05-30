@@ -25,4 +25,14 @@ ingress:
 postgresql:
   auth:
     database: "baskets"
-    
+
+rabbitmq:
+  options:
+    - name: "EntityExchange"
+      value: "entity"
+    - name: "EntityCreateQueue"
+      value: "entity.create"
+    - name: "EntityUpdateQueue"
+      value: "entity.update"
+    - name: "EntityDeleteQueue"
+      value: "entity.delete"

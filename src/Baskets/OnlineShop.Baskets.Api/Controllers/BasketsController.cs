@@ -1,6 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using NuGet.ContentModel;
 using OnlineShop.Baskets.Api.Entities;
+using OnlineShop.Baskets.Api.Enums;
+using OnlineShop.Baskets.Api.Models;
+using OnlineShop.Baskets.Api.Options;
+using RabbitMQ.Client;
 
 namespace OnlineShop.Baskets.Api.Controllers;
 
@@ -11,12 +19,41 @@ public class BasketsController : ControllerBase
 	private readonly BasketsDbContext _context;
 	private readonly HttpClient _httpClient;
 	private readonly IConfiguration _configuration;
+	private readonly RabbitMQOptions _rabbitMqOptions;
+	private readonly ServiceUrls _serviceUrls;
 
-	public BasketsController(BasketsDbContext context, HttpClient httpClient, IConfiguration configuration)
+	private readonly IModel _channel;
+
+	public BasketsController(BasketsDbContext context, HttpClient httpClient, IConfiguration configuration,
+		IOptions<ServiceUrls> serviceUrls, IOptions<RabbitMQOptions> rabbitMqOptions)
 	{
 		_context = context;
 		_httpClient = httpClient;
-		_configuration = configuration;
+		_rabbitMqOptions = rabbitMqOptions.Value;
+		_serviceUrls = serviceUrls.Value;
+
+		var connectionFactory = new ConnectionFactory
+		{
+			HostName = _rabbitMqOptions.Host,
+			Port = _rabbitMqOptions.Port,
+			UserName = _rabbitMqOptions.Username,
+			Password = _rabbitMqOptions.Password
+		};
+		var connection = connectionFactory.CreateConnection();
+		var channel = connection.CreateModel();
+
+		channel.ExchangeDeclare(_rabbitMqOptions.EntityExchange, "direct", false, false, null);
+
+		channel.QueueDeclare(_rabbitMqOptions.EntityCreateQueue, false, false, false, null);
+		channel.QueueBind(_rabbitMqOptions.EntityCreateQueue, _rabbitMqOptions.EntityExchange, "create");
+
+		channel.QueueDeclare(_rabbitMqOptions.EntityUpdateQueue, false, false, false, null);
+		channel.QueueBind(_rabbitMqOptions.EntityUpdateQueue, _rabbitMqOptions.EntityExchange, "update");
+
+		channel.QueueDeclare(_rabbitMqOptions.EntityDeleteQueue, false, false, false, null);
+		channel.QueueBind(_rabbitMqOptions.EntityDeleteQueue, _rabbitMqOptions.EntityExchange, "delete");
+
+		_channel = channel;
 	}
 
 	[HttpGet]
@@ -35,18 +72,30 @@ public class BasketsController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task<ActionResult<Basket>> CreateBasket([FromBody] Basket basket)
+	public async Task<ActionResult<Basket>> CreateBasket([FromBody] int userId)
 	{
-		if (Random.Shared.NextDouble() < 0.4)
-		{
-			await Task.Delay(TimeSpan.FromSeconds(12));
-			return StatusCode(500);
-		}
+		if(!await EnsureUserExists(userId))
+			return BadRequest();
 
-		await _context.Baskets.AddAsync(basket);
+		Basket newBasket = new()
+		{
+			UserId = userId,
+		};
+
+		await _context.Baskets.AddAsync(newBasket);
 		await _context.SaveChangesAsync();
 
-		return Ok(basket);
+		var entityChangedMessage = new EntityChangedMessage()
+		{
+			EntityName = "Basket",
+			EntityId = newBasket.Id,
+			ChangeType = EntityChangeType.Created,
+			NewValue = JsonSerializer.Serialize(newBasket)
+		};
+		_channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
+			Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+		return Ok(newBasket);
 	}
 
 	[HttpPost("{id:int}/addProduct")]
@@ -74,6 +123,48 @@ public class BasketsController : ControllerBase
 				throw;
 		}
 
+		var entityChangedMessage = new EntityChangedMessage()
+		{
+			EntityName = "Basket",
+			EntityId = basket.Id,
+			ChangeType = EntityChangeType.Created,
+			NewValue = JsonSerializer.Serialize(basket)
+		};
+		_channel.BasicPublish(_rabbitMqOptions.EntityExchange, "update", null,
+			Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+		return Ok();
+	}
+
+	[HttpPut("{id:int}")]
+	public async Task<IActionResult> UpdateBasket(int id, [FromBody] Basket basketToUpdate)
+	{
+		if (id != basketToUpdate.Id)
+			return BadRequest();
+
+		_context.Entry(basketToUpdate).State = EntityState.Modified;
+
+		try
+		{
+			await _context.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException)
+		{
+			if (BasketExists(id))
+				return NotFound();
+			throw;
+		}
+
+		var entityChangedMessage = new EntityChangedMessage()
+		{
+			EntityName = "Basket",
+			EntityId = basketToUpdate.Id,
+			ChangeType = EntityChangeType.Created,
+			NewValue = JsonSerializer.Serialize(basketToUpdate)
+		};
+		_channel.BasicPublish(_rabbitMqOptions.EntityExchange, "update", null,
+			Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
 		return Ok();
 	}
 
@@ -87,6 +178,16 @@ public class BasketsController : ControllerBase
 
 		_context.Baskets.Remove(basket);
 		await _context.SaveChangesAsync();
+
+		var entityChangedMessage = new EntityChangedMessage()
+		{
+			EntityName = "Basket",
+			EntityId = basket.Id,
+			ChangeType = EntityChangeType.Created,
+			NewValue = JsonSerializer.Serialize(basket)
+		};
+		_channel.BasicPublish(_rabbitMqOptions.EntityExchange, "delete", null,
+			Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
 
 		return Ok();
 	}

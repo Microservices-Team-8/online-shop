@@ -17,13 +17,17 @@ namespace OnlineShop.Store.Api
 			builder.Services.AddControllers();
             builder.Services.AddDbContext<StoreDbContext>(options =>
 				options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
-
+            
+             
             builder.Services.AddOptions<ServiceUrls>()
-					.Bind(builder.Configuration.GetSection(ServiceUrls.SectionName));
-            builder.Services.AddHttpClient<StoreController>();
+	            .Bind(configuration.GetSection(ServiceUrls.SectionName));
+            builder.Services.AddOptions<RabbitMQOptions>()
+	            .Bind(configuration.GetSection(RabbitMQOptions.SectionName));
 
+            builder.Services.AddHttpClient<StoreController>();
             builder.Services.AddSingleton<AvailabilityService>();
-            builder.Services.AddEndpointsApiExplorer();
+            
+			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 
 			var app = builder.Build();

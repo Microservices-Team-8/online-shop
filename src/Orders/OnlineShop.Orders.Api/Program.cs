@@ -18,6 +18,8 @@ builder.Services.AddDbContext<OrdersDbContext>(options =>
 
 builder.Services.AddOptions<ServiceUrls>()
     .Bind(builder.Configuration.GetSection(ServiceUrls.SectionName));
+builder.Services.AddOptions<RabbitMQOptions>()
+    .Bind(builder.Configuration.GetSection(RabbitMQOptions.SectionName));
 builder.Services.AddHttpClient<OrdersController>();
 
 builder.Services.AddEndpointsApiExplorer();

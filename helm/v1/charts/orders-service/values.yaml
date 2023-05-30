@@ -25,4 +25,18 @@ ingress:
 postgresql:
   auth:
     database: "orders"
-    
+
+rabbitmq:
+  options:
+    - name: "EntityExchange"
+      value: "entity"
+    - name: "EntityCreateQueue"
+      value: "entity.create"
+    - name: "EntityUpdateQueue"
+      value: "entity.update"
+    - name: "EntityDeleteQueue"
+      value: "entity.delete"
+    - name: "EmailExchange"
+      value: "email"
+    - name: "EmailSendQueue"
+      value: "email.send" 

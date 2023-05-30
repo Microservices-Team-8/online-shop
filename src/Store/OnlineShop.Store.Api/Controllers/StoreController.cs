@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OnlineShop.Store.Api.EF;
 using OnlineShop.Store.Api.Models;
-using Microsoft.Extensions.Options;
 using OnlineShop.Store.Api.Options;
+using RabbitMQ.Client;
+using System.Net.Http;
+using System.Text;
 using Newtonsoft.Json;
-using OnlineShop.Store.Api.BackgroundServices;
+using OnlineShop.Store.Api.Enums;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace OnlineShop.Store.Api.Controllers
 {
@@ -15,38 +19,52 @@ namespace OnlineShop.Store.Api.Controllers
 	{
 		private readonly StoreDbContext _context;
         private readonly HttpClient _httpClient;
+        private readonly RabbitMQOptions _rabbitMqOptions;
         private readonly ServiceUrls _serviceUrls;
-        private readonly AvailabilityService _availabilityService;
-        
+        private readonly IModel _channel;
+
         public StoreController(StoreDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls,
-	        AvailabilityService availabilityService)
-		{
+        IOptions<RabbitMQOptions> rabbitMqOptions)
+        {
 			_context = context;
             _httpClient = httpClient;
-            _availabilityService = availabilityService;
+            _rabbitMqOptions = rabbitMqOptions.Value;
             _serviceUrls = serviceUrls.Value;
+
+            var connectionFactory = new ConnectionFactory
+            {
+	            HostName = _rabbitMqOptions.Host,
+	            Port = _rabbitMqOptions.Port,
+	            UserName = _rabbitMqOptions.Username,
+	            Password = _rabbitMqOptions.Password
+            };
+            var connection = connectionFactory.CreateConnection();
+            var channel = connection.CreateModel();
+
+            channel.ExchangeDeclare(_rabbitMqOptions.EmailExchange, "fanout", false, false, null);
+
+            channel.QueueDeclare(_rabbitMqOptions.EmailSendQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EmailSendQueue, _rabbitMqOptions.EmailExchange, "send");
+
+            channel.ExchangeDeclare(_rabbitMqOptions.EntityExchange, "direct", false, false, null);
+
+            channel.QueueDeclare(_rabbitMqOptions.EntityCreateQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EntityCreateQueue, _rabbitMqOptions.EntityExchange, "create");
+
+            channel.QueueDeclare(_rabbitMqOptions.EntityUpdateQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EntityUpdateQueue, _rabbitMqOptions.EntityExchange, "update");
+
+            channel.QueueDeclare(_rabbitMqOptions.EntityDeleteQueue, false, false, false, null);
+            channel.QueueBind(_rabbitMqOptions.EntityDeleteQueue, _rabbitMqOptions.EntityExchange, "delete");
+
+            _channel = channel;
         }
 
 		[HttpGet]
 		public async Task<IActionResult> GetAllProducts()
 		{
-			if (_availabilityService.IsBroken())
-			{
-				await Task.Delay(TimeSpan.FromSeconds(15));
-				return StatusCode(503);
-			}
-
 			var products = await _context.Products.ToListAsync();
-			
 			return Ok(products);
-		}
-		
-		[HttpGet("break")]
-		public async Task<IActionResult> Break()
-		{
-			_availabilityService.Break();
-
-			return Ok();
 		}
 
 		[HttpGet("{id:int}")]
@@ -66,6 +84,16 @@ namespace OnlineShop.Store.Api.Controllers
 		{
 			await _context.Products.AddAsync(product);
 			await _context.SaveChangesAsync();
+
+            var entityChangedMessage = new EntityChangedMessage()
+            {
+                EntityName = "Store",
+                EntityId = product.Id,
+                ChangeType = EntityChangeType.Created,
+                NewValue = JsonSerializer.Serialize(product)
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
+                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
 
             return Ok(product);
 		}
@@ -95,7 +123,19 @@ namespace OnlineShop.Store.Api.Controllers
 					throw;
 				}
 			}
-			return Ok(product);
+
+            var entityChangedMessage = new EntityChangedMessage()
+            {
+                EntityName = "Store",
+                EntityId = id,
+                ChangeType = EntityChangeType.Updated,
+                NewValue = JsonSerializer.Serialize(product)
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "update", null,
+                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+
+            return Ok(product);
 		}
 
 		[HttpDelete("{id:int}")]
@@ -126,7 +166,16 @@ namespace OnlineShop.Store.Api.Controllers
 			_context.Products.Remove(product);
 			await _context.SaveChangesAsync();
 
-			return Ok();
+            var entityChangedMessage = new EntityChangedMessage()
+            {
+                EntityName = "Store",
+                EntityId = id,
+                ChangeType = EntityChangeType.Deleted
+            };
+            _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "delete", null,
+                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+            return Ok();
 		}
 
 		private bool ProductExists(int id)

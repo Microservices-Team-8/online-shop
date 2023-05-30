@@ -15,6 +15,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddOptions<ServiceUrls>()
 	.Bind(configuration.GetSection(ServiceUrls.SectionName));
+builder.Services.AddOptions<RabbitMQOptions>()
+	.Bind(configuration.GetSection(RabbitMQOptions.SectionName));
+
 builder.Services.AddHttpClient<UsersController>();
 
 var app = builder.Build();
