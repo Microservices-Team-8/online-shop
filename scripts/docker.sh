@@ -19,3 +19,11 @@ docker build -t idiordiev/online-shop-baskets-service -f ./../src/Baskets/Online
 docker build -t idiordiev/online-shop-baskets-service-migrations -f ./../src/Baskets/OnlineShop.Baskets.Migrations/Dockerfile ./..
 docker push idiordiev/online-shop-baskets-service
 docker push idiordiev/online-shop-baskets-service-migrations
+
+docker build -t idiordiev/online-shop-email-service  -f ./../src/Email/OnlineShop.Email.Console/Dockerfile ./../
+docker push idiordiev/online-shop-email-service
+
+docker build -t idiordiev/online-shop-entity-history  -f ./../src/EntityHistory/OnlineShop.EntityHistory.Console/Dockerfile ./../
+docker build -t idiordiev/online-shop-entity-history-migrations  -f ./../src/EntityHistory/OnlineShop.EntityHistory.Migrations/Dockerfile ./../
+docker push idiordiev/online-shop-entity-history
+docker push idiordiev/online-shop-entity-history-migrations

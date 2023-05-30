@@ -1,4 +1,9 @@
 ﻿global:
+  rabbitmq:
+    host: "rabbitmq"
+    port: 5672
+    username: "test"
+    password: "test_pass"
   postgresName: "postgres"
   postgresql: 
     service: 

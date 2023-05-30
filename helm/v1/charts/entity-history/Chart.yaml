@@ -1,9 +1,9 @@
 ﻿apiVersion: v2
 type: application
 version: 1.0.0
-name: orders-service
-appVersion: "1.1"
-description: "Orders Service"
+name: entity-history
+appVersion: "1.0"
+description: "Entity History Service"
 dependencies:
   - name: common
     version: 1.0.0

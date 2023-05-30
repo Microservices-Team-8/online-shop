@@ -30,25 +30,31 @@ public class UsersController : ControllerBase
 		_rabbitMqOptions = rabbitMqOptions.Value;
 		_serviceUrls = serviceUrls.Value;
 		
-		var connectionFactory = new ConnectionFactory { HostName = _rabbitMqOptions.Host };
-		using var connection = connectionFactory.CreateConnection();
+		var connectionFactory = new ConnectionFactory
+		{
+			HostName = _rabbitMqOptions.Host,
+			Port = _rabbitMqOptions.Port,
+			UserName = _rabbitMqOptions.Username,
+			Password = _rabbitMqOptions.Password
+		};
+		var connection = connectionFactory.CreateConnection();
 		var channel = connection.CreateModel();
-		
+
 		channel.ExchangeDeclare(_rabbitMqOptions.EmailExchange, "fanout" , false, false, null);
 		
 		channel.QueueDeclare(_rabbitMqOptions.EmailSendQueue, false, false, false, null);
-		channel.QueueBind(_rabbitMqOptions.EmailExchange, _rabbitMqOptions.EmailSendQueue, "send");
+		channel.QueueBind(_rabbitMqOptions.EmailSendQueue, _rabbitMqOptions.EmailExchange, "send");
 		
 		channel.ExchangeDeclare(_rabbitMqOptions.EntityExchange, "direct" , false, false, null);
 		
 		channel.QueueDeclare(_rabbitMqOptions.EntityCreateQueue, false, false, false, null);
-		channel.QueueBind(_rabbitMqOptions.EntityExchange, _rabbitMqOptions.EntityCreateQueue, "create");
+		channel.QueueBind(_rabbitMqOptions.EntityCreateQueue, _rabbitMqOptions.EntityExchange, "create");
 
 		channel.QueueDeclare(_rabbitMqOptions.EntityUpdateQueue, false, false, false, null);
-		channel.QueueBind(_rabbitMqOptions.EntityExchange, _rabbitMqOptions.EntityUpdateQueue, "update");
+		channel.QueueBind(_rabbitMqOptions.EntityUpdateQueue, _rabbitMqOptions.EntityExchange, "update");
 		
 		channel.QueueDeclare(_rabbitMqOptions.EntityDeleteQueue, false, false, false, null);
-		channel.QueueBind(_rabbitMqOptions.EntityExchange, _rabbitMqOptions.EntityDeleteQueue, "delete");
+		channel.QueueBind(_rabbitMqOptions.EntityDeleteQueue, _rabbitMqOptions.EntityExchange, "delete");
 
 		_channel = channel;
 	}
@@ -77,7 +83,7 @@ public class UsersController : ControllerBase
 	{
 		await _context.Users.AddAsync(user);
 		await _context.SaveChangesAsync();
-
+		
 		var response = await _httpClient.PostAsync(_serviceUrls.BasketsService,
 			JsonContent.Create(new { userId = user.Id, basketProducts = Array.Empty<int>() }));
 

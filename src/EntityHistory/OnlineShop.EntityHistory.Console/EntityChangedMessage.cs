@@ -1,5 +1,8 @@
-﻿namespace OnlineShop.EntityHistory.Console;
+﻿using Microsoft.EntityFrameworkCore;
 
+namespace OnlineShop.EntityHistory.Console;
+
+[Keyless]
 public class EntityChangedMessage
 {
     public string EntityName { get; set; }

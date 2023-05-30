@@ -33,17 +33,29 @@ spec:
       {{- end }}
       containers:
         - image: {{ .Values.container.image }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: {{ .Values.container.name }}
           ports:
             {{- range .Values.service.ports }}
             - name: {{ .name }}
               containerPort: {{ .containerPort }}
             {{- end }}
-          {{- if .Values.postgresql }}
           env:
+            {{- if .Values.postgresql }}
             - name: ConnectionStrings__PostgresConnection
               value: "Host={{ .Release.Name }}-{{ .Values.global.postgresName }};Port={{ .Values.global.postgresql.service.ports.postgresql }};Database={{ .Values.postgresql.auth.database }};Username={{ .Values.global.postgresql.auth.username }};Password={{ .Values.global.postgresql.auth.password }}"
-          {{- end }}
+            {{- end }}
+            {{- if .Values.rabbitmq }}
+            - name: RabbitMQ__Host
+              value: "{{ .Values.global.rabbitmq.host }}"
+            - name: RabbitMQ__Username
+              value: {{ .Values.global.rabbitmq.username }}
+            - name: RabbitMQ__Password
+              value: {{ .Values.global.rabbitmq.password }}
+            {{- range .Values.rabbitmq.options }}
+            - name: "RabbitMQ__{{ .name }}"
+              value: {{ .value }}
+            {{- end }}
+            {{- end }}
 {{- end -}}
 {{- end -}}

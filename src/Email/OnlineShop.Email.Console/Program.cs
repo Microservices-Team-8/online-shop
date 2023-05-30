@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using OnlineShop.Email.Console;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -9,11 +11,24 @@ var config = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-var rabbitMqOptions = config.GetValue<RabbitMQOptions>(RabbitMQOptions.SectionName);
+var serviceCollection = new ServiceCollection();
+serviceCollection.AddOptions<RabbitMQOptions>()
+    .Bind(config.GetSection(RabbitMQOptions.SectionName));
+
+var serviceProvider = serviceCollection.BuildServiceProvider();
+var rabbitMqOptions = serviceProvider.GetRequiredService<IOptions<RabbitMQOptions>>().Value;
+
+Console.WriteLine(rabbitMqOptions.Host);
+Console.WriteLine(rabbitMqOptions.Port);
+Console.WriteLine(rabbitMqOptions.Username);
+Console.WriteLine(rabbitMqOptions.Password);
 
 var factory = new ConnectionFactory
 {
-    HostName = config.GetConnectionString("RabbitMQ")
+    HostName = rabbitMqOptions.Host,
+    Port = rabbitMqOptions.Port,
+    UserName = rabbitMqOptions.Username,
+    Password = rabbitMqOptions.Password
 };
 var connection = factory.CreateConnection();
 var channel = connection.CreateModel();
@@ -21,7 +36,7 @@ var channel = connection.CreateModel();
 channel.ExchangeDeclare(rabbitMqOptions.EmailExchange, "fanout" , false, false, null);
 		
 channel.QueueDeclare(rabbitMqOptions.EmailSendQueue, false, false, false, null);
-channel.QueueBind(rabbitMqOptions.EmailExchange, rabbitMqOptions.EmailSendQueue, "send");
+channel.QueueBind(rabbitMqOptions.EmailSendQueue, rabbitMqOptions.EmailExchange, "send");
 
 var consumer = new EventingBasicConsumer(channel);
 consumer.Received += (model, eventArgs) =>
@@ -34,6 +49,8 @@ channel.BasicConsume(
     queue: rabbitMqOptions.EmailSendQueue,
     autoAck: true,
     consumer: consumer);
+
+Console.ReadLine();
 
 void SendEmail(Email email)
 {

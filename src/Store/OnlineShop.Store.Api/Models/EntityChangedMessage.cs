@@ -1,6 +1,6 @@
-﻿using OnlineShop.Users.Api.Enums;
+﻿using OnlineShop.Store.Api.Enums;
 
-namespace OnlineShop.Users.Api.Models;
+namespace OnlineShop.Store.Api.Models;
 
 public class EntityChangedMessage
 {
