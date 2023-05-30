@@ -6,6 +6,7 @@ using OnlineShop.Baskets.Api.Options;
 using Serilog.Events;
 using Serilog;
 using Serilog.Formatting.Json;
+using Serilog.Sinks.Elasticsearch;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -17,15 +18,17 @@ builder.Services.AddDbContext<BasketsDbContext>(options =>
 	options.UseNpgsql(configuration.GetConnectionString("PostgresConnection"));
 });
 
-Log.Logger = new LoggerConfiguration()
-		.MinimumLevel.Debug()
-		.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-		.Enrich.FromLogContext()
-		.WriteTo.File(new JsonFormatter(), "Logs\\log-.txt", rollingInterval: RollingInterval.Day)
-		.CreateLogger();
+var sinkOptions = new ElasticsearchSinkOptions(
+	new Uri(builder.Configuration.GetConnectionString("ElasticSearchConnection")))
+{
+	AutoRegisterTemplate = true,
+	AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7
+};
 
-builder.Logging.ClearProviders();
-builder.Logging.AddSerilog();
+Log.Logger = new LoggerConfiguration()
+	.MinimumLevel.Debug()
+	.WriteTo.Elasticsearch(sinkOptions)
+	.CreateLogger();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
