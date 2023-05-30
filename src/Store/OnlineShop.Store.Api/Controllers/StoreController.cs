@@ -97,6 +97,8 @@ namespace OnlineShop.Store.Api.Controllers
             _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
                 Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
 
+			_logger.LogInformation($"Product with id {product.Id} was added.");
+
             return Ok(product);
 		}
 
@@ -136,6 +138,7 @@ namespace OnlineShop.Store.Api.Controllers
             _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "update", null,
                 Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
 
+			_logger.LogInformation($"Product with id {id} was updated.");
 
             return Ok(product);
 		}
@@ -176,6 +179,8 @@ namespace OnlineShop.Store.Api.Controllers
             };
             _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "delete", null,
                 Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+            _logger.LogInformation($"Product with id {id} was deleted.");
 
             return Ok();
 		}
