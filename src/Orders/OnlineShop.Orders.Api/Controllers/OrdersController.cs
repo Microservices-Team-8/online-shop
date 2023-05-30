@@ -146,7 +146,7 @@ namespace OnlineShop.Orders.Api.Controllers
             };
             _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
                 Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(entityChangedMessage)));
-
+            _logger.LogInformation($"Order with id {res.Entity.Id} was created.");
 
             return Ok(res.Entity);
 		}
@@ -173,6 +173,7 @@ namespace OnlineShop.Orders.Api.Controllers
             };
             _channel.BasicPublish(_rabbitMqOptions.EmailExchange, "send", null,
                 Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(email)));
+            _logger.LogInformation($"Order with id {orderId} was deleted.");
 
             var entityChangedMessage = new EntityChangedMessage()
             {
