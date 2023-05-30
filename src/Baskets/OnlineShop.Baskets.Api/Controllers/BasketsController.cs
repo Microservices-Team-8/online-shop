@@ -22,10 +22,11 @@ public class BasketsController : ControllerBase
 	private readonly RabbitMQOptions _rabbitMqOptions;
 	private readonly ServiceUrls _serviceUrls;
 
+	private readonly ILogger<BasketsController> _logger;
 	private readonly IModel _channel;
 
 	public BasketsController(BasketsDbContext context, HttpClient httpClient, IConfiguration configuration,
-		IOptions<ServiceUrls> serviceUrls, IOptions<RabbitMQOptions> rabbitMqOptions)
+		IOptions<ServiceUrls> serviceUrls, IOptions<RabbitMQOptions> rabbitMqOptions, ILogger<BasketsController> logger)
 	{
 		_context = context;
 		_httpClient = httpClient;
@@ -54,6 +55,7 @@ public class BasketsController : ControllerBase
 		channel.QueueBind(_rabbitMqOptions.EntityDeleteQueue, _rabbitMqOptions.EntityExchange, "delete");
 
 		_channel = channel;
+		_logger = logger;
 	}
 
 	[HttpGet]
@@ -94,6 +96,7 @@ public class BasketsController : ControllerBase
 		};
 		_channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
 			Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+		_logger.LogInformation($"Basket with id {userId} was created.");
 
 		return Ok(newBasket);
 	}
@@ -132,6 +135,7 @@ public class BasketsController : ControllerBase
 		};
 		_channel.BasicPublish(_rabbitMqOptions.EntityExchange, "update", null,
 			Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+		_logger.LogInformation($"Product with ids {string.Join(',', productIds)} were(was) added to the basket with id {id}.");
 
 		return Ok();
 	}
@@ -164,6 +168,7 @@ public class BasketsController : ControllerBase
 		};
 		_channel.BasicPublish(_rabbitMqOptions.EntityExchange, "update", null,
 			Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+		_logger.LogInformation($"Basket with id {id} was updated.");
 
 		return Ok();
 	}
@@ -188,6 +193,7 @@ public class BasketsController : ControllerBase
 		};
 		_channel.BasicPublish(_rabbitMqOptions.EntityExchange, "delete", null,
 			Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+		_logger.LogInformation($"Basket with id {id} was deleted.");
 
 		return Ok();
 	}

@@ -20,9 +20,10 @@ namespace OnlineShop.Orders.Api.Controllers
         private readonly ServiceUrls _serviceUrls; 
         private readonly RabbitMQOptions _rabbitMqOptions;
         private readonly IModel _channel;
+		private readonly ILogger<OrdersController> _logger;
 
-        public OrdersController(OrdersDbContext context, HttpClient httpClient,
-            IOptions<ServiceUrls> serviceUrls, IOptions<RabbitMQOptions> rabbitMqOptions)
+		public OrdersController(OrdersDbContext context, HttpClient httpClient,
+            IOptions<ServiceUrls> serviceUrls, IOptions<RabbitMQOptions> rabbitMqOptions, ILogger<OrdersController> logger)
         {
             _context = context;
             var items = new List<Order>
@@ -96,6 +97,7 @@ namespace OnlineShop.Orders.Api.Controllers
             channel.QueueBind(_rabbitMqOptions.EntityDeleteQueue, _rabbitMqOptions.EntityExchange, "delete");
 
             _channel = channel;
+            _logger = logger;
         }
 
         [HttpGet]
