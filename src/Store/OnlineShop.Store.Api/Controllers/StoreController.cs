@@ -22,9 +22,10 @@ namespace OnlineShop.Store.Api.Controllers
         private readonly RabbitMQOptions _rabbitMqOptions;
         private readonly ServiceUrls _serviceUrls;
         private readonly IModel _channel;
+		private readonly ILogger<StoreController> _logger;
 
-        public StoreController(StoreDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls,
-        IOptions<RabbitMQOptions> rabbitMqOptions)
+		public StoreController(StoreDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls,
+        IOptions<RabbitMQOptions> rabbitMqOptions, ILogger<StoreController> logger)
         {
 			_context = context;
             _httpClient = httpClient;
@@ -58,6 +59,7 @@ namespace OnlineShop.Store.Api.Controllers
             channel.QueueBind(_rabbitMqOptions.EntityDeleteQueue, _rabbitMqOptions.EntityExchange, "delete");
 
             _channel = channel;
+			_logger = logger;
         }
 
 		[HttpGet]

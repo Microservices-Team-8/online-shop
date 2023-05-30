@@ -1,9 +1,11 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Baskets.Api.Controllers;
 using OnlineShop.Baskets.Api.Entities;
 using OnlineShop.Baskets.Api.Options;
+using Serilog.Events;
+using Serilog;
+using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -14,6 +16,16 @@ builder.Services.AddDbContext<BasketsDbContext>(options =>
 {
 	options.UseNpgsql(configuration.GetConnectionString("PostgresConnection"));
 });
+
+Log.Logger = new LoggerConfiguration()
+		.MinimumLevel.Debug()
+		.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+		.Enrich.FromLogContext()
+		.WriteTo.File(new JsonFormatter(), "Logs\\log-.txt", rollingInterval: RollingInterval.Day)
+		.CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
