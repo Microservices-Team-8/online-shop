@@ -19,7 +19,7 @@ namespace OnlineShop.Store.Api
 			var configuration = builder.Configuration;
 
 			builder.Services.AddControllers();
-			builder.Services.AddDbContext<StoreDbContext>(options =>
+            builder.Services.AddDbContext<StoreDbContext>(options =>
 				options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
 
 			var sinkOptions = new ElasticsearchSinkOptions(

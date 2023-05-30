@@ -74,17 +74,15 @@ public class BasketsController : ControllerBase
 	}
 
 	[HttpPost]
-	public async Task<ActionResult<Basket>> CreateBasket([FromBody] int userId)
+	public async Task<ActionResult<Basket>> CreateBasket([FromBody] Basket basket)
 	{
-		if(!await EnsureUserExists(userId))
-			return BadRequest();
-
-		Basket newBasket = new()
+		if (Random.Shared.NextDouble() < 0.4)
 		{
-			UserId = userId,
-		};
+			await Task.Delay(TimeSpan.FromSeconds(12));
+			return StatusCode(500);
+		}
 
-		await _context.Baskets.AddAsync(newBasket);
+		await _context.Baskets.AddAsync(basket);
 		await _context.SaveChangesAsync();
 
 		var entityChangedMessage = new EntityChangedMessage()
@@ -97,7 +95,7 @@ public class BasketsController : ControllerBase
 		_channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
 			Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
 		_logger.LogInformation($"Basket with id {userId} was created.");
-
+		
 		return Ok(newBasket);
 	}
 
