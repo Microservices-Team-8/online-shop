@@ -6,9 +6,10 @@ using OnlineShop.Store.Api.Models;
 using OnlineShop.Store.Api.Options;
 using RabbitMQ.Client;
 using System.Net.Http;
-using System.Text.Json;
 using System.Text;
+using Newtonsoft.Json;
 using OnlineShop.Store.Api.Enums;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace OnlineShop.Store.Api.Controllers
 {
@@ -140,7 +141,23 @@ namespace OnlineShop.Store.Api.Controllers
 		[HttpDelete("{id:int}")]
 		public async Task<IActionResult> DeleteProduct(int id)
 		{
-			var product = await _context.Products.FirstOrDefaultAsync(u => u.Id == id);
+            var response = await _httpClient.GetAsync(_serviceUrls.BasketsService + $"/{id}");
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest(await response.Content.ReadAsStringAsync());
+
+            // Parse the response content to check if the product exists in any basket
+            var content = await response.Content.ReadAsStringAsync();
+            var responseObject = JsonConvert.DeserializeObject<dynamic>(content);
+            bool existsInBasket = responseObject.existsInBasket;
+
+            if (existsInBasket)
+            {
+                // If the product exists in any basket, return a BadRequest
+                return BadRequest("Product exists in a basket and cannot be deleted.");
+            }     
+
+            var product = await _context.Products.FirstOrDefaultAsync(u => u.Id == id);
 
 			if (product is null)
 			{
@@ -157,7 +174,6 @@ namespace OnlineShop.Store.Api.Controllers
             };
             _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "delete", null,
                 Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
-
 
             return Ok();
 		}

@@ -1,4 +1,5 @@
-using System.Text.Json.Serialization;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Baskets.Api.Controllers;
 using OnlineShop.Baskets.Api.Entities;
@@ -37,5 +38,17 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/api/baskets/test-circuit-breaker",
+	async (HttpContext httpContext, [FromServices] IConfiguration config) =>
+	{
+		var url = config.GetValue<string>("ServiceUrls:StoreService");
+		var httpClient = new HttpClient();
+
+		var response =  await httpClient.GetAsync(url);
+		var json = await response.Content.ReadAsStringAsync();
+
+		return Results.Ok(json);
+	});
 
 app.Run();

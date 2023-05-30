@@ -4,7 +4,7 @@ selector: "baskets-service"
 
 container:
   name: "baskets-service"
-  image: "idiordiev/online-shop-basket-service"
+  image: "idiordiev/online-shop-baskets-service"
 
 service:
   ports:
@@ -15,7 +15,7 @@ service:
 migrations:
   container:
     name: "run-migrations"
-    image: "idiordiev/online-shop-basket-service-migrations"
+    image: "idiordiev/online-shop-baskets-service-migrations"
     tag: "latest"
     
 ingress:

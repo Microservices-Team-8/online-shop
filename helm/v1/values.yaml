@@ -1,4 +1,9 @@
 ﻿global:
+  services:
+    basketsService: "baskets-service"
+    ordersService: "orders-service"
+    storeService: "store-service"
+    usersService: "users-service"
   rabbitmq:
     host: "rabbitmq"
     port: 5672
