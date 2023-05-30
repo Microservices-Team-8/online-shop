@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnlineShop.Orders.Api.EF;
@@ -20,9 +19,10 @@ namespace OnlineShop.Orders.Api.Controllers
         private readonly ServiceUrls _serviceUrls; 
         private readonly RabbitMQOptions _rabbitMqOptions;
         private readonly IModel _channel;
+		private readonly ILogger<OrdersController> _logger;
 
-        public OrdersController(OrdersDbContext context, HttpClient httpClient,
-            IOptions<ServiceUrls> serviceUrls, IOptions<RabbitMQOptions> rabbitMqOptions)
+		public OrdersController(OrdersDbContext context, HttpClient httpClient,
+            IOptions<ServiceUrls> serviceUrls, IOptions<RabbitMQOptions> rabbitMqOptions, ILogger<OrdersController> logger)
         {
             _context = context;
             var items = new List<Order>
@@ -96,6 +96,7 @@ namespace OnlineShop.Orders.Api.Controllers
             channel.QueueBind(_rabbitMqOptions.EntityDeleteQueue, _rabbitMqOptions.EntityExchange, "delete");
 
             _channel = channel;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -144,7 +145,7 @@ namespace OnlineShop.Orders.Api.Controllers
             };
             _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
                 Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(entityChangedMessage)));
-
+            _logger.LogInformation($"Order with id {res.Entity.Id} was created.");
 
             return Ok(res.Entity);
 		}
@@ -171,6 +172,7 @@ namespace OnlineShop.Orders.Api.Controllers
             };
             _channel.BasicPublish(_rabbitMqOptions.EmailExchange, "send", null,
                 Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(email)));
+            _logger.LogInformation($"Order with id {orderId} was deleted.");
 
             var entityChangedMessage = new EntityChangedMessage()
             {

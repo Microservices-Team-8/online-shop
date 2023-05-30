@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using OnlineShop.Baskets.Api.Controllers;
 using OnlineShop.Baskets.Api.Entities;
 using OnlineShop.Baskets.Api.Options;
+using Serilog.Events;
+using Serilog;
+using Serilog.Formatting.Json;
+using Serilog.Sinks.Elasticsearch;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -14,6 +18,18 @@ builder.Services.AddDbContext<BasketsDbContext>(options =>
 {
 	options.UseNpgsql(configuration.GetConnectionString("PostgresConnection"));
 });
+
+var sinkOptions = new ElasticsearchSinkOptions(
+	new Uri(builder.Configuration.GetConnectionString("ElasticSearchConnection")))
+{
+	AutoRegisterTemplate = true,
+	AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7
+};
+
+Log.Logger = new LoggerConfiguration()
+	.MinimumLevel.Debug()
+	.WriteTo.Elasticsearch(sinkOptions)
+	.CreateLogger();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -22,9 +22,10 @@ namespace OnlineShop.Store.Api.Controllers
         private readonly RabbitMQOptions _rabbitMqOptions;
         private readonly ServiceUrls _serviceUrls;
         private readonly IModel _channel;
+		private readonly ILogger<StoreController> _logger;
 
-        public StoreController(StoreDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls,
-        IOptions<RabbitMQOptions> rabbitMqOptions)
+		public StoreController(StoreDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls,
+        IOptions<RabbitMQOptions> rabbitMqOptions, ILogger<StoreController> logger)
         {
 			_context = context;
             _httpClient = httpClient;
@@ -58,6 +59,7 @@ namespace OnlineShop.Store.Api.Controllers
             channel.QueueBind(_rabbitMqOptions.EntityDeleteQueue, _rabbitMqOptions.EntityExchange, "delete");
 
             _channel = channel;
+			_logger = logger;
         }
 
 		[HttpGet]
@@ -94,6 +96,8 @@ namespace OnlineShop.Store.Api.Controllers
             };
             _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "create", null,
                 Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+			_logger.LogInformation($"Product with id {product.Id} was added.");
 
             return Ok(product);
 		}
@@ -134,6 +138,7 @@ namespace OnlineShop.Store.Api.Controllers
             _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "update", null,
                 Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
 
+			_logger.LogInformation($"Product with id {id} was updated.");
 
             return Ok(product);
 		}
@@ -174,6 +179,8 @@ namespace OnlineShop.Store.Api.Controllers
             };
             _channel.BasicPublish(_rabbitMqOptions.EntityExchange, "delete", null,
                 Encoding.UTF8.GetBytes(JsonSerializer.Serialize(entityChangedMessage)));
+
+            _logger.LogInformation($"Product with id {id} was deleted.");
 
             return Ok();
 		}

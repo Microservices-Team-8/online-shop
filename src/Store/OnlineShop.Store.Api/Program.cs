@@ -3,6 +3,10 @@ using OnlineShop.Store.Api.BackgroundServices;
 using OnlineShop.Store.Api.Controllers;
 using OnlineShop.Store.Api.EF;
 using OnlineShop.Store.Api.Options;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Json;
+using Serilog.Sinks.Elasticsearch;
 
 namespace OnlineShop.Store.Api
 {
@@ -17,16 +21,27 @@ namespace OnlineShop.Store.Api
 			builder.Services.AddControllers();
             builder.Services.AddDbContext<StoreDbContext>(options =>
 				options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
-            
-             
-            builder.Services.AddOptions<ServiceUrls>()
-	            .Bind(configuration.GetSection(ServiceUrls.SectionName));
-            builder.Services.AddOptions<RabbitMQOptions>()
-	            .Bind(configuration.GetSection(RabbitMQOptions.SectionName));
 
-            builder.Services.AddHttpClient<StoreController>();
-            builder.Services.AddSingleton<AvailabilityService>();
-            
+			var sinkOptions = new ElasticsearchSinkOptions(
+				new Uri(configuration.GetConnectionString("ElasticSearchConnection")))
+			{
+				AutoRegisterTemplate = true,
+				AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7
+			};
+
+			Log.Logger = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.WriteTo.Elasticsearch(sinkOptions)
+				.CreateLogger();
+
+			builder.Services.AddOptions<ServiceUrls>()
+				.Bind(configuration.GetSection(ServiceUrls.SectionName));
+			builder.Services.AddOptions<RabbitMQOptions>()
+				.Bind(configuration.GetSection(RabbitMQOptions.SectionName));
+
+			builder.Services.AddHttpClient<StoreController>();
+			builder.Services.AddSingleton<AvailabilityService>();
+
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 

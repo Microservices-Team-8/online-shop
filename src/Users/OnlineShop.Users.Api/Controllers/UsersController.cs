@@ -21,9 +21,10 @@ public class UsersController : ControllerBase
 	private readonly ServiceUrls _serviceUrls;
 
 	private readonly IModel _channel;
+	private readonly ILogger<UsersController> _logger;
 
 	public UsersController(UsersDbContext context, HttpClient httpClient, IOptions<ServiceUrls> serviceUrls, 
-		IOptions<RabbitMQOptions> rabbitMqOptions)
+		IOptions<RabbitMQOptions> rabbitMqOptions, ILogger<UsersController> logger)
 	{
 		_context = context;
 		_httpClient = httpClient;
@@ -57,6 +58,7 @@ public class UsersController : ControllerBase
 		channel.QueueBind(_rabbitMqOptions.EntityDeleteQueue, _rabbitMqOptions.EntityExchange, "delete");
 
 		_channel = channel;
+		_logger = logger;
 	}
 
 	[HttpGet]
@@ -85,7 +87,7 @@ public class UsersController : ControllerBase
 		await _context.SaveChangesAsync();
 		
 		var response = await _httpClient.PostAsync(_serviceUrls.BasketsService,
-			JsonContent.Create(user.Id));
+			JsonContent.Create(new { userId = user.Id, basketProducts = Array.Empty<int>() }));
 
 		if (!response.IsSuccessStatusCode)
 		{
