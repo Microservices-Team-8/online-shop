@@ -9,6 +9,7 @@ using RabbitMQ.Client.Events;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
     .Build();
 
 var serviceCollection = new ServiceCollection();

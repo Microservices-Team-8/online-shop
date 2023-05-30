@@ -8,6 +8,7 @@ using RabbitMQ.Client.Events;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
     .Build();
 
 var serviceCollection = new ServiceCollection();
@@ -16,11 +17,6 @@ serviceCollection.AddOptions<RabbitMQOptions>()
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
 var rabbitMqOptions = serviceProvider.GetRequiredService<IOptions<RabbitMQOptions>>().Value;
-
-Console.WriteLine(rabbitMqOptions.Host);
-Console.WriteLine(rabbitMqOptions.Port);
-Console.WriteLine(rabbitMqOptions.Username);
-Console.WriteLine(rabbitMqOptions.Password);
 
 var factory = new ConnectionFactory
 {
