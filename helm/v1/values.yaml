@@ -18,6 +18,9 @@
       postgresPassword: "DVypULxSCuElHPOUEobD"
       username: "onlineshop"
       password: "yhivJp9hroOoY70pASHC"
+  elasticSearch: 
+    serviceName: "elasticsearch-master"
+    port: 9200
 
 postgresql:
   nameOverride: "postgres"
