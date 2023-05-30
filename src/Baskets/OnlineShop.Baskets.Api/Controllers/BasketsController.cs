@@ -194,7 +194,7 @@ public class BasketsController : ControllerBase
 
 	private async Task<bool> EnsureUserExists(int userId)
 	{
-		string uri = _configuration.GetValue<string>("ServiceUrls:UsersService");
+		string uri = _serviceUrls.UsersService;
 
 		var response = await _httpClient.GetAsync(uri + $"/{userId}");
 

@@ -7,9 +7,10 @@ public class EntityHistoryContextFactory : IDesignTimeDbContextFactory<EntityHis
 {
     public EntityHistoryDbContext CreateDbContext(string[] args)
     {
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection")!;
+        
         var options = new DbContextOptionsBuilder<EntityHistoryDbContext>()
-            .UseNpgsql(
-                "Host=localhost;Port=5433;Database=entityHistory;Username=onlineshop;Password=yhivJp9hroOoY70pASHC")
+            .UseNpgsql(connectionString)
             .Options;
 
         return new EntityHistoryDbContext(options);

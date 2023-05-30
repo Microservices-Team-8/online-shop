@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OnlineShop.EntityHistory.Console;
 using RabbitMQ.Client;
@@ -17,10 +18,9 @@ serviceCollection.AddDbContext<EntityHistoryDbContext>(
     options => options.UseNpgsql(config.GetConnectionString("PostgresConnection")));
 serviceCollection.AddOptions<RabbitMQOptions>()
     .Bind(config.GetSection(RabbitMQOptions.SectionName));
-    
+
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
-var dbContext = serviceProvider.GetRequiredService<EntityHistoryDbContext>();
 var rabbitMqOptions = serviceProvider.GetRequiredService<IOptions<RabbitMQOptions>>().Value;
 
 var factory = new ConnectionFactory
@@ -47,9 +47,17 @@ channel.QueueBind(rabbitMqOptions.EntityDeleteQueue, rabbitMqOptions.EntityExcha
 var consumer = new EventingBasicConsumer(channel);
 consumer.Received += async (model, eventArgs) =>
 {
-    var message = JsonSerializer.Deserialize<EntityChangedMessage>(eventArgs.Body.Span);
-    await dbContext.EntityChanges.AddAsync(message);
-    await dbContext.SaveChangesAsync();
+    try
+    {
+        var dbContext = serviceProvider.GetRequiredService<EntityHistoryDbContext>();
+        var message = JsonSerializer.Deserialize<EntityChangedMessage>(eventArgs.Body.Span);
+        await dbContext.EntityChanges.AddAsync(message);
+        await dbContext.SaveChangesAsync();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+    }
 };
     
 channel.BasicConsume(
@@ -67,5 +75,7 @@ channel.BasicConsume(
     autoAck: true,
     consumer: consumer);
 
-Console.ReadLine();
+Host.CreateDefaultBuilder()
+    .Build()
+    .Run();
     

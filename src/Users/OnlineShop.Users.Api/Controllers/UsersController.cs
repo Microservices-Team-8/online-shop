@@ -85,7 +85,7 @@ public class UsersController : ControllerBase
 		await _context.SaveChangesAsync();
 		
 		var response = await _httpClient.PostAsync(_serviceUrls.BasketsService,
-			JsonContent.Create(new { userId = user.Id, basketProducts = Array.Empty<int>() }));
+			JsonContent.Create(user.Id));
 
 		if (!response.IsSuccessStatusCode)
 		{

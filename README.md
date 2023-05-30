@@ -1,4 +1,23 @@
-﻿# Для 4 лабораторної
+﻿# Для 5 лабораторної
+
+Використовували RabbitMQ, оскільки більшість членів команди була знайома з ним
+
+Налаштували "відправку емейлів" (```email-service```  - логує на консоль повідомлення типу ```Email ... was sent to ...```)
+та логування змін сутностей ```entity-history``` (ходить в базу та записує в ```entityHistory.EntityChanges```)
+
+Для роботи потрібно встановити RabbitMQ через Helm та додати тестового користувача
+(якщо тут змінювати назву реліза, ім'я користувача або пароль, це також треба змінити в файлі ```values.yaml```, розділ ```global```)
+
+```
+helm install rabbitmq oci://registry-1.docker.io/bitnamicharts/rabbitmq
+kubectl exec rabbitmq-0 rabbitmqctl start_app
+kubectl exec rabbitmq-0 rabbitmqctl add_user test test_pass
+kubectl exec rabbitmq-0 rabbitmqctl set_user_tags test administrator
+kubectl exec rabbitmq-0 rabbitmqctl set_permissions test ".*" ".*" ".*"
+```
+
+
+# Для 4 лабораторної
 
 ## retry/timeout
 

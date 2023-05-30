@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OnlineShop.Email.Console;
 using RabbitMQ.Client;
@@ -36,8 +37,15 @@ channel.QueueBind(rabbitMqOptions.EmailSendQueue, rabbitMqOptions.EmailExchange,
 var consumer = new EventingBasicConsumer(channel);
 consumer.Received += (model, eventArgs) =>
 {
-    var email = JsonSerializer.Deserialize<Email>(eventArgs.Body.Span);
-    SendEmail(email);
+    try
+    {
+        var email = JsonSerializer.Deserialize<Email>(eventArgs.Body.Span);
+        SendEmail(email);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+    }
 };
     
 channel.BasicConsume(
@@ -45,7 +53,9 @@ channel.BasicConsume(
     autoAck: true,
     consumer: consumer);
 
-Console.ReadLine();
+Host.CreateDefaultBuilder()
+    .Build()
+    .Run();
 
 void SendEmail(Email email)
 {
