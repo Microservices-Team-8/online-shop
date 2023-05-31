@@ -1,8 +1,22 @@
-﻿# Для 5 лабораторної
+﻿# Для 6 лабораторної
+
+Використовували Elasticsearch як систему централізованого логування.
+Встановлювали через команди 
+
+```
+helm repo add elastic https://helm.elastic.co
+helm install elasticsearch elastic/elasticsearch
+```
+Логується на POST, PUT, DELETE реквестах на ```api/baskets```, ```api/store```, ```api/orders```
+
+Також додали 4 графіки на Grafana
+![Screenshot_2.png](Screenshot_2.png)
+
+# Для 5 лабораторної
 
 Використовували RabbitMQ, оскільки більшість членів команди була знайома з ним
 
-Налаштували "відправку емейлів" (```email-service```  - логує на консоль повідомлення типу ```Email ... was sent to ...```)
+Налаштували "відправку емейлів" (```email-service```  - логує на консоль повідомлення типу ```Email ... was sent to ...```), який використовується при створенні користувачів,
 та логування змін сутностей ```entity-history``` (ходить в базу та записує в ```entityHistory.EntityChanges```)
 
 Для роботи потрібно встановити RabbitMQ через Helm та додати тестового користувача
